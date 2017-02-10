@@ -1,0 +1,113 @@
+apply plugin: 'java'
+apply plugin: "com.bmuschko.tomcat"
+apply plugin: 'eclipse'
+
+apply plugin: "checkstyle"
+apply plugin: "findbugs"
+apply plugin: "pmd"
+
+compileJava {
+  sourceCompatibility = '1.8'
+  targetCompatibility = 1.8
+}
+
+ext {
+    //tomcatVersion = "8.0.33"
+    tomcatVersion = "7.0.69"
+    
+    jstlVersion = "1.2" 
+    javaxServletJsp = "2.1"
+    javaxServlet = "3.1.0"
+    slf4jVersion = "1.7.21"
+    jerseyVersion = '2.25.1' 
+}
+
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    providedCompile "javax.servlet:javax.servlet-api:$javaxServlet"
+    providedCompile "javax.servlet.jsp:jsp-api:$javaxServletJsp" 
+
+    //compile "javax.servlet:javax.servlet-api:$javaxServlet"
+    //compile "javax.servlet.jsp:jsp-api:$javaxServletJsp" 
+    compile "org.glassfish.jersey.containers:jersey-container-servlet:$jerseyVersion"
+    compile "commons-validator:commons-validator:1.5.1"
+    
+    compile "net.coobird:thumbnailator:0.4.8"
+    
+    compile files("marvin/marvin_1.5.5.jar");
+    compile files("marvin/plugins/image/org.marvinproject.image.transform.scale.jar");
+    
+    compile "com.mortennobel:java-image-scaling:0.8.6"
+    
+    compile "org.imgscalr:imgscalr-lib:4.2"
+
+    compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    //compile "javax.servlet:jstl:$jstlVersion"
+    runtime "javax.servlet:jstl:$jstlVersion"
+    
+    
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion",
+            "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatVersion",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"
+}
+
+buildscript {
+
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.bmuschko:gradle-tomcat-plugin:2.2.5"
+    }
+    
+}    
+
+/*
+checkstyle {
+    configFile = rootProject.file("tools/checkstyle/sun_checks.xml")
+    ignoreFailures = true
+    showViolations = true
+}
+
+checkstyleTest {
+    enabled = false
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.enabled false
+        html.enabled true
+        html.destination rootProject.file("build/reports/checkstyle/checkstyle_report.html")
+    }
+}
+
+findbugs {
+    sourceSets = [sourceSets.main]
+    ignoreFailures = true
+    effort = "max"
+    reportLevel = "high"
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+        html.destination rootProject.file("build/reports/findbugs/findbugs_report.html")
+    }
+}
+
+pmd {
+    ignoreFailures = true
+    consoleOutput = true
+    ruleSets = ["java-basic", "java-strings", "java-braces"]
+    reportsDir = file("${rootProject.rootDir}/build/reports/pmd")
+
+}
+*/
