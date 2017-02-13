@@ -17,7 +17,7 @@ import org.imgcnv.service.ResizeService;
 import org.imgcnv.service.ResizeServiceImageThumbImpl;
 import org.imgcnv.utils.Consts;
 
-public class JobExecutor {
+public class JobExecutor implements Callback {
 
     private static JobExecutor instance = new JobExecutor();
 
@@ -91,15 +91,16 @@ public class JobExecutor {
             FutureObject future = new FutureObject();
 
             future.setResource(item);
-            CopyCallable callable = new CopyCallable();
+            DownloadCallable callable = new DownloadCallable();
             callable.setIndex(id);
             callable.setUrl(item.getUrl());
             callable.setDownloadService(downloadService);
-
-            future.setFuture(es.submit(callable));
+            callable.setCallback(getInstance());
 
             CopyOnWriteArrayList<Future<Boolean>> futureImages = new CopyOnWriteArrayList<Future<Boolean>>();
             future.setFutureImages(futureImages);
+
+            future.setFuture(es.submit(callable));
 
             tasks.add(future);
         }
@@ -107,7 +108,7 @@ public class JobExecutor {
         return id;
     }
 
-    public void startConvert(long id, String url) {
+    private void startConvert(long id, String url) {
         List<FutureObject> tasks = new CopyOnWriteArrayList<FutureObject>();
         tasks = hm.get(id);
 
@@ -132,6 +133,11 @@ public class JobExecutor {
             }
         }
 
+    }
+
+    @Override
+    public void callConvert(long id, String url) {
+        startConvert(id, url);
     }
 
     public boolean isReadyJob(Long id) {
@@ -159,7 +165,7 @@ public class JobExecutor {
         } else {
             return false;
         }
-        
+
         return true;
     }
 

@@ -7,9 +7,10 @@ import java.util.concurrent.Callable;
 import org.imgcnv.service.DownloadService;
 import org.imgcnv.utils.Utils;
 
-public class CopyCallable implements Callable<Boolean> {
+public class DownloadCallable implements Callable<Boolean> {
 
     private DownloadService downloadService;
+    private Callback callback;
 
     private String url;
     private Long index;
@@ -38,6 +39,14 @@ public class CopyCallable implements Callable<Boolean> {
         this.url = url;
     }
 
+    public Callback getCallback() {
+        return callback;
+    }
+
+    public void setCallback(Callback callback) {
+        this.callback = callback;
+    }
+
     @Override
     public Boolean call() throws Exception {
 
@@ -52,8 +61,7 @@ public class CopyCallable implements Callable<Boolean> {
         long copyResult = downloadService.download(url, targetPath);
 
         if (copyResult > 0) {
-            JobExecutor executor = JobExecutor.getInstance();
-            executor.startConvert(index, url);
+            callback.callConvert(index, url);
         }
 
         return copyResult > 0;
