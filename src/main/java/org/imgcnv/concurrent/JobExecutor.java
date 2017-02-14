@@ -109,8 +109,7 @@ public class JobExecutor implements Callback {
     }
 
     private void startConvert(long id, String url) {
-        List<FutureObject> tasks = new CopyOnWriteArrayList<FutureObject>();
-        tasks = hm.get(id);
+        List<FutureObject> tasks = hm.get(id);
 
         ListIterator<FutureObject> it = tasks.listIterator();
         while (it.hasNext()) {
