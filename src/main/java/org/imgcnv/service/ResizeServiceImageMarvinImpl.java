@@ -8,8 +8,14 @@ import org.slf4j.LoggerFactory;
 
 import marvin.image.MarvinImage;
 import marvin.io.MarvinImageIO;
-import static marvin.MarvinPluginCollection.*;
+import static marvin.MarvinPluginCollection.scale;
 
+/**
+ * Service for image scaling. Use Marvin library for image conversion
+ *
+ * @author Dmitry_Slepchenkov
+ *
+ */
 public class ResizeServiceImageMarvinImpl implements ResizeService {
 
     /**
@@ -17,9 +23,15 @@ public class ResizeServiceImageMarvinImpl implements ResizeService {
      */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public synchronized long createResizedCopy(int scaledWidth, int scaledHeight, String fileName, Path destination) {
-        String fullFileName = Utils.getImageName(fileName, destination, Integer.toString(scaledWidth) + "mrv");
+    public final synchronized long createResizedCopy(final int scaledWidth,
+            final int scaledHeight,
+            final String fileName, final Path destination) {
+        String fullFileName = Utils.getImageName(
+                fileName, destination, Integer.toString(scaledWidth) + "mrv");
         long result = -1;
         logger.info("ResizedCopy started: {}", fullFileName);
         long timeout = System.currentTimeMillis();

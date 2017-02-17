@@ -14,14 +14,23 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.commons.validator.routines.UrlValidator;
 
+/**Service implementation for download images from Internet.
+*
+* @author Dmitry_Slepchenkov
+*
+*/
 public class DownloadServiceImpl implements DownloadService {
     /**
      * Logger for this class.
      */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public synchronized long download(String url, Path destination) {
+    public final synchronized long download(
+            final String url, final Path destination) {
         long result = -1;
         UrlValidator urlValidator = new UrlValidator();
         URL uri = null;
@@ -36,7 +45,8 @@ public class DownloadServiceImpl implements DownloadService {
 
         if (uri != null) {
             try (InputStream in = uri.openStream()) {
-                Files.copy(in, destination, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(in, destination,
+                        StandardCopyOption.REPLACE_EXISTING);
                 logger.info("download:  {} -> {}", url, destination);
                 result = destination.toFile().length();
             } catch (IOException e) {

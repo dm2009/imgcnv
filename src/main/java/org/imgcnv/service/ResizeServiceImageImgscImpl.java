@@ -14,6 +14,12 @@ import org.slf4j.LoggerFactory;
 
 import com.mortennobel.imagescaling.ResampleOp;
 
+/**
+ * Service for image scaling. Use org.imgcnv library for image conversion
+ *
+ * @author Dmitry_Slepchenkov
+ *
+ */
 public class ResizeServiceImageImgscImpl implements ResizeService {
 
     /**
@@ -21,9 +27,15 @@ public class ResizeServiceImageImgscImpl implements ResizeService {
      */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public synchronized long createResizedCopy(int scaledWidth, int scaledHeight, String fileName, Path destination) {
-        String fullFileName = Utils.getImageName(fileName, destination, Integer.toString(scaledWidth) + "imgsc");
+    public final synchronized long createResizedCopy(final int scaledWidth,
+            final int scaledHeight,
+            final String fileName, final Path destination) {
+        String fullFileName = Utils.getImageName(fileName, destination,
+                Integer.toString(scaledWidth) + "imgsc");
         String newFileExt = Utils.getFileExt(fullFileName);
 
         long result = -1;
@@ -36,12 +48,15 @@ public class ResizeServiceImageImgscImpl implements ResizeService {
                 long timeout = System.currentTimeMillis();
 
                 inputImage = ImageIO.read(file);
-                BufferedImage modifiedImage = new ResampleOp(scaledWidth, scaledHeight).filter(inputImage, null);
+                BufferedImage modifiedImage = new ResampleOp(scaledWidth,
+                        scaledHeight).filter(inputImage, null);
 
-                ImageIO.write(modifiedImage, newFileExt, new File(fullFileName));
+                ImageIO.write(modifiedImage, newFileExt,
+                        new File(fullFileName));
                 result = 1;
                 timeout = System.currentTimeMillis() - timeout;
-                logger.info("ResizedCopy:{} end timeout:{}", fullFileName, timeout);
+                logger.info("ResizedCopy:{} end timeout:{}", fullFileName,
+                        timeout);
 
             } catch (IOException e) {
                 result = -1;

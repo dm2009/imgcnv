@@ -9,29 +9,61 @@ import java.util.Set;
 import org.imgcnv.utils.Consts;
 
 /**
- * Created by Dmitry_Slepchenkov on 2/1/2017.
+ * Class wrapper for url resource. Created by Dmitry_Slepchenkov on 2/1/2017.
  */
 public class ImageResource implements Serializable {
 
+    /**
+     * UID.
+     */
     private static final long serialVersionUID = 1L;
+    /**
+     * url on image file.
+     */
     private String url;
 
-    public String getUrl() {
+    /**
+     *
+     * @return String url.
+     */
+    public final String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    /**
+     *
+     * @param urlParam
+     *            String to set.
+     */
+    public final void setUrl(final String urlParam) {
+        this.url = urlParam;
     }
 
+    /**
+     * Constructor from superclass.
+     */
     public ImageResource() {
     }
 
-    public ImageResource(String url) {
-        this.url = url;
+    /**
+     * Constructor with field.
+     *
+     * @param urlParam
+     *            String url on image file.
+     */
+    public ImageResource(final String urlParam) {
+        this.url = urlParam;
     }
 
-    public static List<ImageResource> ImageResourceListFromString(String params) {
+    /**
+     * Convert string with urls to List<ImageResource>.
+     *
+     * @param params
+     *            String with list of url with delimiters
+     * @return List<ImageResource>
+     */
+    public static List<ImageResource> imageResourceListFromString(
+            final String params) {
         List<ImageResource> list = new ArrayList<ImageResource>();
         String[] str = params.split(Consts.DELIMITER);
         for (String url : str) {
@@ -40,7 +72,15 @@ public class ImageResource implements Serializable {
         return list;
     }
 
-    public static Set<ImageResource> ImageResourceSetFromString(String params) {
+    /**
+     * Convert string with urls to Set<ImageResource>.
+     *
+     * @param params
+     *            String with list of url with delimiters
+     * @return Set<ImageResource>
+     */
+    public static Set<ImageResource> imageResourceSetFromString(
+            final String params) {
         Set<ImageResource> set = new HashSet<ImageResource>();
         String[] str = params.split(Consts.DELIMITER);
         for (String url : str) {
@@ -49,35 +89,53 @@ public class ImageResource implements Serializable {
         return set;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String toString() {
+    public final String toString() {
         return new StringBuilder("ImageResource [url=")
                 .append(getUrl())
-                .append("]").toString();
+                .append("]")
+                .toString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((url == null) ? 0 : url.hashCode());
+        result = prime * result;
+        if (url != null) {
+            result += url.hashCode();
+        }
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
+    public final boolean equals(final Object obj) {
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         ImageResource other = (ImageResource) obj;
         if (url == null) {
-            if (other.url != null)
+            if (other.url != null) {
                 return false;
-        } else if (!url.equals(other.url))
+            }
+        } else if (!url.equals(other.url)) {
             return false;
+        }
         return true;
     }
 

@@ -1,6 +1,6 @@
 package org.imgcnv.service;
 
-import java.io.IOException;
+import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 
 import org.imgcnv.exception.PersistentException;
@@ -9,29 +9,56 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.coobird.thumbnailator.Thumbnails;
+import net.coobird.thumbnailator.resizers.configurations.Antialiasing;
 
+/**
+ * Service for image scaling. Use net.coobird.thumbnailator.Thumbnails library
+ * for image conversion
+ * Support sharp filter
+ * @author Dmitry_Slepchenkov
+ *
+ */
 public class ResizeServiceImageThumbImpl implements ResizeService {
     /**
      * Logger for this class.
      */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public synchronized long createResizedCopy(int scaledWidth, int scaledHeight, String fileName, Path destination) {
+    public final synchronized long createResizedCopy(
+            final int scaledWidth, final int scaledHeight,
+            final String fileName, final Path destination) {
 
-        String fullFileName = Utils.getImageName(fileName, destination, Integer.toString(scaledWidth) + "th");
+        String fullFileName = Utils.getImageName(fileName, destination,
+                Integer.toString(scaledWidth) + "th");
+        //String newFileExt = Utils.getFileExt(fullFileName);
+
         long result = -1;
         try {
             logger.info("ResizedCopy started: {}", fullFileName);
             long timeout = System.currentTimeMillis();
-            Thumbnails.of(fileName)
-                    .forceSize(scaledWidth, scaledWidth)
+            BufferedImage bi = Utils.sharper(
+                    Thumbnails.of(fileName)
                     .outputQuality(1.0f)
-                    .toFile(fullFileName);
+                    .antialiasing(Antialiasing.OFF)
+                    .size(scaledWidth, scaledWidth)
+                    .asBufferedImage());
+
+            //ImageIO.write(bi, newFileExt, new File(fullFileName));
+            Thumbnails.of(bi)
+            .outputQuality(1.0f)
+            .antialiasing(Antialiasing.OFF)
+            .size(scaledWidth, scaledWidth)
+            .toFile(fullFileName);
+
             result = 1;
             timeout = System.currentTimeMillis() - timeout;
-            logger.info("ResizedCopy: {} end timeout {}", fullFileName, timeout);
-        } catch (IOException e) {
+            logger.info("ResizedCopy: {} end timeout {}",
+                    fullFileName, timeout);
+        } catch (Exception e) {
             result = -1;
             throw new PersistentException(e);
         }

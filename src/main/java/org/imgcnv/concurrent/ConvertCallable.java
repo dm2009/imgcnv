@@ -7,48 +7,108 @@ import java.util.concurrent.Callable;
 import org.imgcnv.service.ResizeService;
 import org.imgcnv.utils.Utils;
 
+/**
+ * Class implements callable interface for task to convert image.
+ *
+ * @author Dmitry_Slepchenkov
+ *
+ */
 public class ConvertCallable implements Callable<Boolean> {
 
+    /**
+     * Resize service for image convert.
+     */
     private ResizeService resizeService;
 
+    /**
+     * url, associated with image file.
+     */
     private String url;
+    /**
+     * index which define job id (number) and folder to store images.
+     */
     private Long index;
+    /**
+     * Image resolution in pixels.
+     */
     private Integer resolution;
 
-    public ResizeService getResizeService() {
+    /**
+     *
+     * @return ResizeService.
+     */
+    public final ResizeService getResizeService() {
         return resizeService;
     }
 
-    public void setResizeService(ResizeService resizeService) {
-        this.resizeService = resizeService;
+    /**
+     *
+     * @param resizeServiceParam
+     *            the resizeService to set.
+     */
+    public final void setResizeService(final ResizeService resizeServiceParam) {
+        this.resizeService = resizeServiceParam;
     }
 
-    public Long getIndex() {
+    /**
+     *
+     * @return index
+     */
+    public final Long getIndex() {
         return index;
     }
 
-    public void setIndex(Long index) {
-        this.index = index;
+    /**
+     *
+     * @param indexParam
+     *            the index to set.
+     */
+    public final void setIndex(final Long indexParam) {
+        this.index = indexParam;
     }
 
-    public String getUrl() {
+    /**
+     *
+     * @return url
+     */
+    public final String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    /**
+     *
+     * @param urlParam
+     *            the url to set.
+     */
+    public final void setUrl(final String urlParam) {
+        this.url = urlParam;
     }
 
-    public Integer getResolution() {
+    /**
+     *
+     * @return resolution
+     */
+    public final Integer getResolution() {
         return resolution;
     }
 
-    public void setResolution(Integer resolution) {
-        this.resolution = resolution;
+    /**
+     *
+     * @param resolutionParam
+     *            the resolution to set.
+     */
+    public final void setResolution(final Integer resolutionParam) {
+        this.resolution = resolutionParam;
     }
 
+    /**
+     * @return result of resize image operation. If operation was successful
+     *         result is true.
+     * @throws Exception
+     *             if unable to compute a result
+     */
     @Override
-    public Boolean call() throws Exception {
+    public final Boolean call() throws Exception {
 
         String copyPath = new Utils().getCopyPath();
         Utils.createDir(copyPath);
@@ -57,14 +117,16 @@ public class ConvertCallable implements Callable<Boolean> {
         String targetFolderLink = copyPath + File.separator + index.toString();
         Utils.createDir(targetFolderLink);
 
-        Path targetPath = new File(targetFolderLink + File.separator + fileName).toPath();
+        Path targetPath = new File(targetFolderLink + File.separator + fileName)
+                .toPath();
 
         String convPathLink = targetFolderLink + File.separator + "thmb";
         Utils.createDir(convPathLink);
 
         Path convPath = new File(convPathLink).toPath();
 
-        long resizeResult = resizeService.createResizedCopy(resolution, resolution,
+        long resizeResult = resizeService.createResizedCopy(resolution,
+                resolution,
                 targetPath.toAbsolutePath().toString(), convPath);
 
         return resizeResult > 0;
