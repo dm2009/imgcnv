@@ -124,7 +124,7 @@ public class DownloadCallable implements Callable<Boolean> {
                 .toPath();
         long copyResult = downloadService.download(url, targetPath);
 
-        if (copyResult > 0) {
+        if (copyResult > 0 && callback != null) {
             callback.callConvert(index, url);
         }
 

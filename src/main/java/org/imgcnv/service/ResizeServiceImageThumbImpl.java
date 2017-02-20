@@ -34,25 +34,33 @@ public class ResizeServiceImageThumbImpl implements ResizeService {
 
         String fullFileName = Utils.getImageName(fileName, destination,
                 Integer.toString(scaledWidth) + "th");
-        //String newFileExt = Utils.getFileExt(fullFileName);
+        String newFileExt = Utils.getFileExt(fullFileName);
 
         long result = -1;
         try {
             logger.info("ResizedCopy started: {}", fullFileName);
             long timeout = System.currentTimeMillis();
-            BufferedImage bi = Utils.sharper(
-                    Thumbnails.of(fileName)
-                    .outputQuality(1.0f)
-                    .antialiasing(Antialiasing.OFF)
-                    .size(scaledWidth, scaledWidth)
-                    .asBufferedImage());
+            if (!"GIF".equals(newFileExt.toUpperCase())) {
+                BufferedImage bi = Utils.sharper(
+                        Thumbnails.of(fileName)
+                        .outputQuality(1.0f)
+                        .antialiasing(Antialiasing.OFF)
+                        .size(scaledWidth, scaledWidth)
+                        .asBufferedImage(), Utils.OP_SHARP_MIDDLE);
 
-            //ImageIO.write(bi, newFileExt, new File(fullFileName));
-            Thumbnails.of(bi)
-            .outputQuality(1.0f)
-            .antialiasing(Antialiasing.OFF)
-            .size(scaledWidth, scaledWidth)
-            .toFile(fullFileName);
+                //ImageIO.write(bi, newFileExt, new File(fullFileName));
+                Thumbnails.of(bi)
+                .outputQuality(1.0f)
+                .antialiasing(Antialiasing.OFF)
+                .size(scaledWidth, scaledWidth)
+                .toFile(fullFileName);
+            } else {
+                Thumbnails.of(fileName)
+                .outputQuality(1.0f)
+                .antialiasing(Antialiasing.OFF)
+                .size(scaledWidth, scaledWidth)
+                .toFile(fullFileName);
+            }
 
             result = 1;
             timeout = System.currentTimeMillis() - timeout;

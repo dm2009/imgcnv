@@ -8,11 +8,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 
 import org.imgcnv.exception.PersistentException;
 import org.imgcnv.utils.Utils;
@@ -46,59 +42,58 @@ public class ResizeServiceImageIOImpl implements ResizeService {
         fileType.put("JPG", true);
         fileType.put("JPEG", true);
 
-        BufferedImage scaled = new BufferedImage(scaledWidth, scaledHeight,
-                BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = scaled.createGraphics();
+        String fullFileName = Utils.getImageName(fileName, destination,
+                Integer.toString(scaledWidth));
         long result = -1;
         try {
             File file = new File(fileName);
             if (file.exists()) {
+                long timeout = System.currentTimeMillis();
                 BufferedImage originalImage = ImageIO.read(file);
 
-                //using bilinear interpolation
-                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON);
+                int realWidth = originalImage.getWidth();
+                int realHeight = originalImage.getHeight();
+                int maxSize = Math.max(realWidth, realHeight);
+                int newWidth = scaledWidth;
+                int newHeight = scaledHeight;
 
-                g.drawImage(originalImage, 0, 0, scaledWidth,
-                        scaledHeight, null);
-                g.dispose();
-                String fullFileName = Utils.getImageName(fileName,
-                        destination, Integer.toString(scaledWidth));
-                String newFileExt = Utils.getFileExt(fullFileName);
-                Boolean isJpeg = fileType.get(newFileExt.toUpperCase());
-                if (isJpeg != null) {
-                    logger.info("ResizedCopy started: {}", fullFileName);
-                    long timeout = System.currentTimeMillis();
-                    if (isJpeg) {
-                        File outPutImage = new File(fullFileName);
-                        ImageOutputStream  ios =
-                                ImageIO.createImageOutputStream(outPutImage);
-                        ImageWriter writer = ImageIO
-                                .getImageWritersByFormatName("jpeg").next();
-                        ImageWriteParam param = writer.getDefaultWriteParam();
-                        param.setCompressionMode(
-                                ImageWriteParam.MODE_EXPLICIT);
-                        param.setCompressionQuality(1.0F);
-                        writer.setOutput(ios);
-                        writer.write(
-                                null, new IIOImage(scaled, null, null), param);
-                        writer.dispose();
-                        ImageIO.write(scaled, newFileExt, ios);
-                        ios.close();
-                    } else {
-                        ImageIO.write(
-                                scaled, newFileExt, new File(fullFileName));
-                    }
-                    result = 1;
-                    timeout = System.currentTimeMillis() - timeout;
-                    logger.info("ResizedCopy:{} end timeout{}", fullFileName,
-                            timeout);
-                } else {
-                    result = -1;
-                    logger.info("Usupported file extension: {}", fullFileName);
+                if (realWidth <= 0 || realHeight <= 0 || scaledWidth <= 0
+                        || scaledHeight <= 0) {
+                    return -1;
                 }
+
+                if (scaledWidth <= maxSize) {
+                    float koef = 1.0f * maxSize / scaledWidth;
+                    newWidth = Math.round(realWidth / koef);
+                    newHeight = Math.round(realHeight / koef);
+                } else {
+                    float koef = 1.0f * scaledWidth / maxSize;
+                    newWidth = Math.round(realWidth / koef);
+                    newHeight = Math.round(realHeight / koef);
+                }
+
+                BufferedImage scaled = new BufferedImage(newWidth, newHeight,
+                        BufferedImage.TYPE_INT_RGB);
+                Graphics2D g = scaled.createGraphics();
+
+                // using bilinear interpolation
+                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_OFF);
+
+                g.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+                g.dispose();
+
+                scaled = Utils.sharper(scaled, Utils.OP_SHARP_LIGHT);
+
+                result = Utils.saveBufferedImage(scaled, fullFileName);
+                timeout = System.currentTimeMillis() - timeout;
+                logger.info("ResizedCopy:{} end timeout{}", fullFileName,
+                        timeout);
+            } else {
+                result = -1;
+                logger.info("Usupported file extension: {}", fullFileName);
             }
         } catch (Exception e) {
             result = -1;

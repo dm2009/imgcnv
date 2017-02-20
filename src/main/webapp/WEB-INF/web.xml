@@ -5,12 +5,18 @@
     id="WebApp_ID" version="3.0">
     <display-name>Image App</display-name>
 
-<servlet>
+    <!-- Spring Listener -->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    
+    <!-- Jersey Servlet -->
+    <servlet>
         <servlet-name>jersey-serlvet</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
-             <param-name>jersey.config.server.provider.packages</param-name>
-             <param-value>org.imgcnv.rest</param-value>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>org.imgcnv.rest</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
@@ -18,9 +24,15 @@
         <servlet-name>jersey-serlvet</servlet-name>
         <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
+    
+    <!-- loading Spring Context for registering beans with ApplicationContext -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:context.xml</param-value>
+    </context-param>
 
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
-   
+
 </web-app>

@@ -2,7 +2,6 @@ package org.imgcnv.concurrent;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -12,9 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.imgcnv.entity.ImageResource;
 import org.imgcnv.service.DownloadService;
-import org.imgcnv.service.DownloadServiceImpl;
 import org.imgcnv.service.ResizeService;
-import org.imgcnv.service.ResizeServiceImageThumbImpl;
 import org.imgcnv.utils.Consts;
 
 /**
@@ -25,23 +22,21 @@ import org.imgcnv.utils.Consts;
  */
 public final class JobExecutor implements Callback {
 
-    /**
-     * Singleton instance.
-     */
-    private static JobExecutor instance = new JobExecutor();
-
-    /**
+     /**
      * Unique id of job.
      */
-    private AtomicLong index;
+    private AtomicLong index = new AtomicLong(0);
     /**
      * Used for store job and List<FutureObject>>.
      */
-    private ConcurrentHashMap<Long, List<FutureObject>> hm;
+    private ConcurrentHashMap<Long, List<FutureObject>> jobMap =
+            new ConcurrentHashMap<Long, List<FutureObject>>();
     /**
      * ExecutorService for execute tasks.
      */
-    private ExecutorService es;
+    private ExecutorService executorService =
+            Executors.newFixedThreadPool(Runtime.getRuntime()
+                    .availableProcessors());
 
     /**
      * Download service for image download.
@@ -75,7 +70,7 @@ public final class JobExecutor implements Callback {
      * @return Map<Long, List<FutureObject>>.
      */
     public ConcurrentHashMap<Long, List<FutureObject>> getHm() {
-        return hm;
+        return jobMap;
     }
 
     /**
@@ -83,9 +78,9 @@ public final class JobExecutor implements Callback {
      * @param hmParam
      *            the Map<Long, List<FutureObject>> to set.
      */
-    public void setHm(final ConcurrentHashMap<Long,
-            List<FutureObject>> hmParam) {
-        this.hm = hmParam;
+    public void setHm(final ConcurrentHashMap<Long, List<FutureObject>>
+    hmParam) {
+        this.jobMap = hmParam;
     }
 
     /**
@@ -93,7 +88,7 @@ public final class JobExecutor implements Callback {
      * @return ExecutorService.
      */
     public ExecutorService getEs() {
-        return es;
+        return executorService;
     }
 
     /**
@@ -102,7 +97,7 @@ public final class JobExecutor implements Callback {
      *            the ExecutorService to set.
      */
     public void setEs(final ExecutorService esParam) {
-        this.es = esParam;
+        this.executorService = esParam;
     }
 
     /**
@@ -139,28 +134,6 @@ public final class JobExecutor implements Callback {
         this.resizeService = resizeServiceParam;
     }
 
-    /**
-     * Constructor for this class.
-     */
-    private JobExecutor() {
-        hm = new ConcurrentHashMap<Long, List<FutureObject>>();
-        index = new AtomicLong(0);
-        es = Executors.newFixedThreadPool(Runtime.getRuntime()
-                .availableProcessors());
-
-        downloadService = new DownloadServiceImpl();
-        resizeService = new ResizeServiceImageThumbImpl();
-        //resizeService = new ResizeServiceImageImgsrImpl();
-
-    }
-
-    /**
-     *
-     * @return JobExecutor singleton instance.
-     */
-    public static JobExecutor getInstance() {
-        return instance;
-    }
 
     /**
      * Creates tasks for download files from url list.
@@ -182,17 +155,18 @@ public final class JobExecutor implements Callback {
             callable.setIndex(id);
             callable.setUrl(item.getUrl());
             callable.setDownloadService(downloadService);
-            callable.setCallback(getInstance());
+            callable.setCallback(this);
+
 
             CopyOnWriteArrayList<Future<Boolean>> futureImages =
                     new CopyOnWriteArrayList<Future<Boolean>>();
             future.setFutureImages(futureImages);
 
-            future.setFuture(es.submit(callable));
+            future.setFuture(executorService.submit(callable));
 
             tasks.add(future);
         }
-        hm.put(id, tasks);
+        jobMap.put(id, tasks);
         return id;
     }
 
@@ -205,14 +179,12 @@ public final class JobExecutor implements Callback {
      *            url of image
      */
     private void startConvert(final long id, final String url) {
-        List<FutureObject> tasks = hm.get(id);
+        List<FutureObject> tasks = jobMap.get(id);
 
-        ListIterator<FutureObject> it = tasks.listIterator();
-        while (it.hasNext()) {
-            FutureObject fo = it.next();
+        for (FutureObject fo : tasks) {
             if (fo.getResource().getUrl().equals(url)) {
-                CopyOnWriteArrayList<Future<Boolean>> futureImages =
-                        fo.getFutureImages();
+                CopyOnWriteArrayList<Future<Boolean>> futureImages = fo
+                        .getFutureImages();
                 List<Integer> thumbails = Arrays.asList(Consts.SIZE_THUMB_1,
                         Consts.SIZE_THUMB_2, Consts.SIZE_THUMB_3);
 
@@ -222,11 +194,8 @@ public final class JobExecutor implements Callback {
                     callable.setUrl(url);
                     callable.setResolution(thumbail);
                     callable.setResizeService(resizeService);
-                    futureImages.add(es.submit(callable));
+                    futureImages.add(executorService.submit(callable));
                 }
-
-                fo.setFutureImages(futureImages);
-                it.set(fo);
             }
         }
 
@@ -254,29 +223,27 @@ public final class JobExecutor implements Callback {
      */
     public boolean isReadyJob(final Long id) {
         List<FutureObject> tasks;
-        tasks = hm.get(id);
+        tasks = jobMap.get(id);
 
-        if (tasks != null) {
-            for (FutureObject item : tasks) {
-                if (item.getFuture().isDone()) {
-                    CopyOnWriteArrayList<Future<Boolean>> list =
-                            item.getFutureImages();
-                    if (list.size() == 0) {
-                        return false;
-                    } else {
-                        for (Future<Boolean> child : list) {
-                            if (!child.isDone()) {
-                                return false;
-                            }
-                        }
-                    }
-                } else {
-                    return false;
-                }
+        if (tasks == null) {
+            return false;
+        }
+
+        for (FutureObject item : tasks) {
+            if (!item.getFuture().isDone()) {
+                return false;
             }
 
-        } else {
-            return false;
+            CopyOnWriteArrayList<Future<Boolean>> list = item.getFutureImages();
+            if (list.size() == 0) {
+                return false;
+            } else {
+                for (Future<Boolean> child : list) {
+                    if (!child.isDone()) {
+                        return false;
+                    }
+                }
+            }
         }
 
         return true;

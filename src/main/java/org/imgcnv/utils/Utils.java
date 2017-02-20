@@ -4,10 +4,19 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 //import javax.servlet.ServletContext;
 import java.nio.file.Path;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+
+import org.imgcnv.exception.PersistentException;
 
 /**
  * Utility class for application.
@@ -79,8 +88,10 @@ public class Utils {
      */
     public static final String getImageName(final String fileName,
             final Path destination, final String index) {
-        String newFileName = fileName.substring(fileName.lastIndexOf(
-                File.separator) + 1, fileName.lastIndexOf(".")) + index;
+        String newFileName = fileName.substring(
+                fileName.lastIndexOf(File.separator) + 1,
+                fileName.lastIndexOf("."))
+                + index;
         String newFileExt = getFileExt(fileName);
         String fullFileName = destination.toAbsolutePath() + File.separator
                 + newFileName + "." + newFileExt;
@@ -111,35 +122,95 @@ public class Utils {
      * A {@link ConvolveOp} using a very strong "sharp" kernel that acts
      * (softens the image a bit) when applied to an image.
      */
-    public static final ConvolveOp OP_SHARP_MORE = new ConvolveOp(
+    public static final ConvolveOp OP_SHARP_HARD = new ConvolveOp(
             new Kernel(3, 3, new float[]
                     {-1.f, -1.f, -1.f, -1.f, 9.0f, -1.f, -1.f, -1.f, -1.f}),
             ConvolveOp.EDGE_NO_OP, null);
 
     /**
-     * A {@link ConvolveOp} using a light "sharp" kernel that acts
-     * (softens the image a bit) when applied to an image.
+     * A {@link ConvolveOp} using a middle "sharp" kernel that acts (softens the
+     * image a bit) when applied to an image.
+     */
+    public static final ConvolveOp OP_SHARP_MIDDLE = new ConvolveOp(
+            new Kernel(3, 3, new float[]
+                    {0.f, -1.f, 0.f, -1.f, 5.0f, -1.f, 0.f, -1.f, 0.f}),
+            ConvolveOp.EDGE_NO_OP,
+            null);
+
+    /**
+     * A {@link ConvolveOp} using a light "sharp" kernel that acts (softens the
+     * image a bit) when applied to an image.
      */
     public static final ConvolveOp OP_SHARP_LIGHT = new ConvolveOp(
             new Kernel(3, 3, new float[]
-                    {0.f, -1.f, 0.f, -1.f, 5.0f, -1.f, 0.f, -1.f, 0.f}),
-            ConvolveOp.EDGE_NO_OP, null);
+                    {0.f, -.125f, 0.f, -.125f, 1.5f, -.125f, 0.f, -.125f, 0.f}),
+            ConvolveOp.EDGE_NO_OP,
+            null);
 
-    /**Sharper example filter.
+    /**
+     * Sharper example filter.
      *
-     * @param originalPic input BufferedImage
-     * @return BufferedImage Pic with sharp filter
+     * @param originalPic
+     *            input BufferedImage
+     * @param convolve
+     *            input ConvolveOp
+     * @return BufferedImage
+     *            Pic with sharp filter
      */
-    public static BufferedImage sharper(final BufferedImage originalPic) {
-        int imageWidth = originalPic.getWidth();
-        int imageHeight = originalPic.getHeight();
+    public static BufferedImage sharper(final BufferedImage originalPic,
+            final ConvolveOp convolve) {
 
-        BufferedImage newPic = new BufferedImage(imageWidth, imageHeight,
-                BufferedImage.TYPE_3BYTE_BGR);
+        BufferedImage newPic = new BufferedImage(originalPic.getWidth(),
+                originalPic.getHeight(), originalPic.getType());
 
-        ConvolveOp co = OP_SHARP_LIGHT;
-        co.filter(originalPic, newPic);
+        convolve.filter(originalPic, newPic);
 
         return newPic;
-}
+    }
+
+    /**
+     * Save BufferedImage into file.
+     *
+     * @param image
+     *            BufferedImage Input BufferedImage
+     * @param fileName
+     *            String Filename of file to save.
+     * @return If operation successful value more 0.
+     */
+    public static int saveBufferedImage(final BufferedImage image,
+            final String fileName) {
+
+        int result = -1;
+        String fileExt = Utils.getFileExt(fileName);
+        if ("JPEG".equals(fileExt.toUpperCase())
+                || "JPG".equals(fileExt.toUpperCase())) {
+            File outPutImage = new File(fileName);
+            try (ImageOutputStream ios =
+                    ImageIO.createImageOutputStream(outPutImage)) {
+                ImageWriter writer =
+                        ImageIO.getImageWritersByFormatName("jpeg").next();
+                ImageWriteParam param = writer.getDefaultWriteParam();
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                param.setCompressionQuality(1.0F);
+                writer.setOutput(ios);
+                writer.write(null, new IIOImage(image, null, null), param);
+                writer.dispose();
+                ImageIO.write(image, fileExt, ios);
+                // ios.close();
+                result = 1;
+            } catch (IOException e) {
+                result = -1;
+                throw new PersistentException(e);
+            }
+        } else {
+            try {
+                ImageIO.write(image, fileExt, new File(fileName));
+                result = 1;
+            } catch (IOException e) {
+                result = -1;
+                throw new PersistentException(e);
+            }
+        }
+        return result;
+    }
 }

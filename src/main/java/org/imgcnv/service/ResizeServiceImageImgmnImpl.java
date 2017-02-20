@@ -1,5 +1,6 @@
 package org.imgcnv.service;
 
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +13,10 @@ import org.imgcnv.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mortennobel.imagescaling.ResampleOp;
+import com.mortennobel.imagescaling.MultiStepRescaleOp;
+
+
+
 
 /**
  * Service for image scaling. Use org.imgcnv library for image conversion
@@ -20,7 +24,7 @@ import com.mortennobel.imagescaling.ResampleOp;
  * @author Dmitry_Slepchenkov
  *
  */
-public class ResizeServiceImageImgscImpl implements ResizeService {
+public class ResizeServiceImageImgmnImpl implements ResizeService {
 
     /**
      * Logger for this class.
@@ -48,8 +52,14 @@ public class ResizeServiceImageImgscImpl implements ResizeService {
                 long timeout = System.currentTimeMillis();
 
                 inputImage = ImageIO.read(file);
-                BufferedImage modifiedImage = new ResampleOp(scaledWidth,
+                /*BufferedImage modifiedImage = new ResampleOp(scaledWidth,
                         scaledHeight).filter(inputImage, null);
+                */
+
+                BufferedImage modifiedImage = new MultiStepRescaleOp(
+                        scaledWidth, scaledHeight,
+                        RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+                        .filter(inputImage, null);
 
                 ImageIO.write(modifiedImage, newFileExt,
                         new File(fullFileName));
@@ -66,5 +76,6 @@ public class ResizeServiceImageImgscImpl implements ResizeService {
 
         return result;
     }
+
 
 }

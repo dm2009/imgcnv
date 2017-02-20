@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Service for image scaling. Use org.imgscalr library for image conversion
  * Support sharp filter
+ *
  * @author Dmitry_Slepchenkov
  */
 public class ResizeServiceImageImgsrImpl implements ResizeService {
@@ -30,13 +31,12 @@ public class ResizeServiceImageImgsrImpl implements ResizeService {
      * {@inheritDoc}
      */
     @Override
-    public final synchronized long createResizedCopy(
-            final int scaledWidth, final int scaledHeight,
+    public final synchronized long createResizedCopy(final int scaledWidth,
+            final int scaledHeight,
             final String fileName, final Path destination) {
 
-        String fullFileName = Utils.getImageName(
-                fileName, destination, Integer.toString(scaledWidth) + "imgsr");
-        String newFileExt = Utils.getFileExt(fullFileName);
+        String fullFileName = Utils.getImageName(fileName, destination,
+                Integer.toString(scaledWidth) + "imgsr");
 
         long result = -1;
 
@@ -51,11 +51,9 @@ public class ResizeServiceImageImgsrImpl implements ResizeService {
 
                 BufferedImage modifiedImage = Scalr.resize(inputImage,
                         Method.ULTRA_QUALITY, scaledWidth, scaledHeight,
-                        Utils.OP_SHARP_LIGHT);
+                        Utils.OP_SHARP_MIDDLE);
 
-                ImageIO.write(modifiedImage, newFileExt,
-                        new File(fullFileName));
-                result = 1;
+                result = Utils.saveBufferedImage(modifiedImage, fullFileName);
 
                 timeout = System.currentTimeMillis() - timeout;
                 logger.info("ResizedCopy: {} end timeout {}", fullFileName,

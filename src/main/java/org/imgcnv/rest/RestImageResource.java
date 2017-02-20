@@ -2,6 +2,7 @@ package org.imgcnv.rest;
 
 import org.imgcnv.concurrent.JobExecutor;
 import org.imgcnv.entity.ImageResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ public class RestImageResource {
     /**
      * Executor class.
      */
+    @Autowired
     private JobExecutor executor;
 
     /**
@@ -79,7 +81,6 @@ public class RestImageResource {
         List<ImageResource> ob = new ArrayList<ImageResource>(
                 ImageResource.imageResourceSetFromString(params));
 
-        executor = JobExecutor.getInstance();
 
         Long job = executor.addToExecutor(ob);
         return Response.status(Response.Status.OK)
@@ -122,7 +123,6 @@ public class RestImageResource {
      */
     public final Response imagesInfo(final String id) {
 
-        executor = JobExecutor.getInstance();
         String output = "Your job: " + id + " is finished: "
         + executor.isReadyJob(Long.valueOf(id));
         return Response.status(Response.Status.OK).entity(output).build();
