@@ -27,15 +27,31 @@ public final class Consts {
     public static final Integer SIZE_THUMB_3 = 500;
 
     /**
-     * The number of threads for multitreading process.
+     * The number of threads for multitreading resize process.
      *
      */
-    public static final int THREADS = 3;
+    public static final int RESIZE_THREADS =
+            Runtime.getRuntime().availableProcessors();
 
+    /**
+     * The number of threads for multitreading download process.
+     *
+     */
+
+    public static final int DOWNLOAD_THREADS =
+            5 * Runtime.getRuntime().availableProcessors();
     /**
      * The delimiter for split url in url list.
      *
      */
+
+    public static final int QUEUE_CAPACITY =
+            2 * DOWNLOAD_THREADS;
+    /**
+     * The number of threads for multitreading download process.
+     *
+     */
+
     public static final String DELIMITER = ";";
 
     /**

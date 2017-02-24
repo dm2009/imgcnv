@@ -1,5 +1,6 @@
-package org.imgcnv.concurrent;
+package org.imgcnv.service.concurrent;
 
+import java.awt.image.BufferedImage;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import java.util.concurrent.Future;
@@ -12,7 +13,7 @@ import org.imgcnv.entity.ImageResource;
  * @author Dmitry_Slepchenkov
  *
  */
-public class FutureObject {
+public class JobFutureObject {
 
     /**
      * ImageResource url wrapper.
@@ -20,9 +21,9 @@ public class FutureObject {
     private ImageResource resource;
 
     /**
-     * Future<Boolean> holds image for copy.
+     * Future<BufferedImage> holds image for copy.
      */
-    private Future<Boolean> future;
+    private Future<BufferedImage> future;
 
     /**
      * List Future<Boolean> holds images for convert (resize).
@@ -48,18 +49,18 @@ public class FutureObject {
 
     /**
      *
-     * @return Future<Boolean>.
+     * @return Future<BufferedImage>.
      */
-    public final Future<Boolean> getFuture() {
+    public final Future<BufferedImage> getFuture() {
         return future;
     }
 
     /**
      *
      * @param futureParam
-     *            The Future<Boolean> to set.
+     *            The Future<BufferedImage> to set.
      */
-    public final void setFuture(final Future<Boolean> futureParam) {
+    public final void setFuture(final Future<BufferedImage> futureParam) {
         this.future = futureParam;
     }
 
@@ -115,7 +116,7 @@ public class FutureObject {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        FutureObject other = (FutureObject) obj;
+        JobFutureObject other = (JobFutureObject) obj;
         if (future == null) {
             if (other.future != null) {
                 return false;

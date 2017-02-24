@@ -1,5 +1,7 @@
-package org.imgcnv.service;
+package org.imgcnv.service.concurrent.download;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -8,7 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import org.imgcnv.exception.PersistentException;
+import javax.imageio.ImageIO;
+
+import org.imgcnv.exception.ApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,33 +33,46 @@ public class DownloadServiceImpl implements DownloadService {
      * {@inheritDoc}
      */
     @Override
-    public final synchronized long download(
+    public final BufferedImage download(
             final String url, final Path destination) {
-        long result = -1;
+        BufferedImage image = null;
         UrlValidator urlValidator = new UrlValidator();
         URL uri = null;
         if (urlValidator.isValid(url)) {
             try {
                 uri = new URL(url);
             } catch (MalformedURLException e) {
-                result = -1;
-                throw new PersistentException(e);
+                throw new ApplicationException(e);
             }
         }
+
 
         if (uri != null) {
             try (InputStream in = uri.openStream()) {
+
+
                 Files.copy(in, destination,
                         StandardCopyOption.REPLACE_EXISTING);
-                logger.info("download:  {} -> {}", url, destination);
-                result = destination.toFile().length();
+
+                /* clone stream ?
+                if (in != null) {
+                    image = ImageIO.read(Utils.duplicate(in));
+                }*/
+
+                //read local file
+                File file = new File(destination.toString());
+                if (file.exists()) {
+                    image = ImageIO.read(file);
+                }
+
+                logger.info("download: {} -> {}, image.isNull: {}", url,
+                        destination, String.valueOf(image == null));
             } catch (IOException e) {
-                result = -1;
-                throw new PersistentException(e);
+                throw new ApplicationException(e);
             }
+
         }
 
-        return result;
+        return image;
     }
-
 }

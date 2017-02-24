@@ -6,9 +6,43 @@
     <display-name>Image App</display-name>
 
     <!-- Spring Listener -->
-    <listener>
+    <!-- listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
+    </listener -->
+    
+    
+    <context-param>
+      <param-name>contextClass</param-name>
+      <param-value>
+         org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+      </param-value>
+   </context-param>
+   <context-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>org.imgcnv.spring</param-value>
+   </context-param>
+   <listener>
+      <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+   </listener>
+    
+    
+    <!-- servlet>
+    <servlet-name>appServlet</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+        <param-name>contextClass</param-name>
+        <param-value>
+            org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+        </param-value>
+    </init-param>
+    <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            org.imgcnv.spring.Beans
+        </param-value>
+    </init-param>
+    </servlet -->
+    
     
     <!-- Jersey Servlet -->
     <servlet>
@@ -22,14 +56,16 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>jersey-serlvet</servlet-name>
-        <url-pattern>/rest/*</url-pattern>
+        <url-pattern>/*</url-pattern>
     </servlet-mapping>
     
     <!-- loading Spring Context for registering beans with ApplicationContext -->
-    <context-param>
+    <!-- context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>classpath:context.xml</param-value>
-    </context-param>
+    </context-param -->
+    
+    
 
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>

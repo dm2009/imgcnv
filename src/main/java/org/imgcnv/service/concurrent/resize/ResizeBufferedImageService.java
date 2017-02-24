@@ -1,5 +1,6 @@
-package org.imgcnv.service;
+package org.imgcnv.service.concurrent.resize;
 
+import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 
 /**
@@ -8,7 +9,7 @@ import java.nio.file.Path;
  * @author Dmitry_Slepchenkov
  *
  */
-public interface ResizeService {
+public interface ResizeBufferedImageService {
     /**
      * Method create a scaling image.
      *
@@ -16,14 +17,17 @@ public interface ResizeService {
      *            int The width of scaling image
      * @param scaledHeight
      *            int The height of scaling image
-     * @param fileName
-     *            String Name of input file
+     * @param bufferedImage
+     *            BufferedImage of input pic
      * @param destination
      *            Path Destination for result image
+     * @param url
+     *            url of image
      * @return long Result of operation. If operation is successful return size
      *         of file
      */
     long createResizedCopy(int scaledWidth, int scaledHeight,
-            String fileName, Path destination);
+            BufferedImage bufferedImage, String url,
+            Path destination);
 
 }

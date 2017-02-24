@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-//import javax.servlet.ServletContext;
 import java.nio.file.Path;
 
 import javax.imageio.IIOImage;
@@ -16,7 +15,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
-import org.imgcnv.exception.PersistentException;
+import org.imgcnv.exception.ApplicationException;
 
 /**
  * Utility class for application.
@@ -70,7 +69,7 @@ public class Utils {
      * @return String File extension
      */
     public static final String getFileExt(final String fileName) {
-        String newFileExt = fileName.substring(fileName.lastIndexOf(".") + 1,
+        String newFileExt = fileName.substring(fileName.lastIndexOf('.') + 1,
                 fileName.length());
         return newFileExt;
     }
@@ -90,7 +89,7 @@ public class Utils {
             final Path destination, final String index) {
         String newFileName = fileName.substring(
                 fileName.lastIndexOf(File.separator) + 1,
-                fileName.lastIndexOf("."))
+                fileName.lastIndexOf('.'))
                 + index;
         String newFileExt = getFileExt(fileName);
         String fullFileName = destination.toAbsolutePath() + File.separator
@@ -200,7 +199,7 @@ public class Utils {
                 result = 1;
             } catch (IOException e) {
                 result = -1;
-                throw new PersistentException(e);
+                throw new ApplicationException(e);
             }
         } else {
             try {
@@ -208,9 +207,29 @@ public class Utils {
                 result = 1;
             } catch (IOException e) {
                 result = -1;
-                throw new PersistentException(e);
+                throw new ApplicationException(e);
             }
         }
         return result;
     }
+
+    /**
+     * Clane analog for BufferedImage.
+     *
+     * @param  image
+     *            BufferedImage image
+     * @return BufferedImage clone
+     */
+    public static BufferedImage duplicate(final BufferedImage image) {
+        if (image == null) {
+            throw new ApplicationException("BufferedImage == null");
+        }
+
+        BufferedImage j = new BufferedImage(image.getWidth(),
+                image.getHeight(), image.getType());
+        j.setData(image.getData());
+        return j;
+        }
+
+
 }

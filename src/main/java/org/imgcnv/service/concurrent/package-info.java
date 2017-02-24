@@ -5,4 +5,4 @@
 * @author Dmitry_Slepchenkov
 * @version 1.0
 */
-package org.imgcnv.concurrent;
+package org.imgcnv.service.concurrent;

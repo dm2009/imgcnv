@@ -1,5 +1,6 @@
-package org.imgcnv.service;
+package org.imgcnv.service.concurrent.download;
 
+import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 
 /**Service for download images from Internet.
@@ -13,8 +14,8 @@ public interface DownloadService {
      *
      * @param url String with address of image
      * @param destination Path for save image
-     * @return long value, must be more then 0.
+     * @return BufferedImage value, must not be null.
      */
-    long download(String url, Path destination);
+    BufferedImage download(String url, Path destination);
 
 }

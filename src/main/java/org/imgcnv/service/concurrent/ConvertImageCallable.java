@@ -1,10 +1,11 @@
-package org.imgcnv.concurrent;
+package org.imgcnv.service.concurrent;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
-import org.imgcnv.service.ResizeService;
+import org.imgcnv.service.concurrent.resize.ResizeBufferedImageService;
 import org.imgcnv.utils.Utils;
 
 /**
@@ -13,12 +14,12 @@ import org.imgcnv.utils.Utils;
  * @author Dmitry_Slepchenkov
  *
  */
-public class ConvertCallable implements Callable<Boolean> {
+public class ConvertImageCallable implements Callable<Boolean> {
 
     /**
      * Resize service for image convert.
      */
-    private ResizeService resizeService;
+    private ResizeBufferedImageService resizeService;
 
     /**
      * url, associated with image file.
@@ -34,10 +35,16 @@ public class ConvertCallable implements Callable<Boolean> {
     private Integer resolution;
 
     /**
+     * BufferedImage.
+     */
+    private BufferedImage image;
+
+
+    /**
      *
      * @return ResizeService.
      */
-    public final ResizeService getResizeService() {
+    public final ResizeBufferedImageService getResizeService() {
         return resizeService;
     }
 
@@ -46,7 +53,8 @@ public class ConvertCallable implements Callable<Boolean> {
      * @param resizeServiceParam
      *            the resizeService to set.
      */
-    public final void setResizeService(final ResizeService resizeServiceParam) {
+    public final void setResizeService(final ResizeBufferedImageService
+            resizeServiceParam) {
         this.resizeService = resizeServiceParam;
     }
 
@@ -101,6 +109,24 @@ public class ConvertCallable implements Callable<Boolean> {
         this.resolution = resolutionParam;
     }
 
+
+    /**
+     *
+     * @return BufferedImage.
+     */
+    public final BufferedImage getImage() {
+        return image;
+    }
+
+    /**
+     *
+     * @param imageParam
+     *            the BufferedImage to set
+     */
+    public final void setImage(final BufferedImage imageParam) {
+        this.image = imageParam;
+    }
+
     /**
      * @return result of resize image operation. If operation was successful
      *         result is true.
@@ -113,12 +139,8 @@ public class ConvertCallable implements Callable<Boolean> {
         String copyPath = new Utils().getCopyPath();
         Utils.createDir(copyPath);
 
-        String fileName = Utils.getFileName(url);
         String targetFolderLink = copyPath + File.separator + index.toString();
         Utils.createDir(targetFolderLink);
-
-        Path targetPath = new File(targetFolderLink + File.separator + fileName)
-                .toPath();
 
         String convPathLink = targetFolderLink + File.separator + "thmb";
         Utils.createDir(convPathLink);
@@ -126,8 +148,7 @@ public class ConvertCallable implements Callable<Boolean> {
         Path convPath = new File(convPathLink).toPath();
 
         long resizeResult = resizeService.createResizedCopy(resolution,
-                resolution,
-                targetPath.toAbsolutePath().toString(), convPath);
+                resolution, image, url, convPath);
 
         return resizeResult > 0;
     }

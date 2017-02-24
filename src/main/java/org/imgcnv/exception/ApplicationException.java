@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 
-public class PersistentException extends RuntimeException {
+public class ApplicationException extends RuntimeException {
     /**
      * UID.
      *
@@ -19,14 +19,14 @@ public class PersistentException extends RuntimeException {
      * Logger for this class.
      */
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(PersistentException.class);
+            LoggerFactory.getLogger(ApplicationException.class);
 
     /**
      * Constructs a new runtime exception with {@code null} as its detail
      * message. The cause is not initialized, and may subsequently be
      * initialized by a call to {@link #initCause}.
      */
-    public PersistentException() {
+    public ApplicationException() {
 
     }
 
@@ -46,7 +46,7 @@ public class PersistentException extends RuntimeException {
      *            permitted, and indicates that the cause is nonexistent or
      *            unknown.)
      */
-    public PersistentException(final String message, final Throwable cause) {
+    public ApplicationException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
@@ -59,7 +59,7 @@ public class PersistentException extends RuntimeException {
      *            the detail message. The detail message is saved for later
      *            retrieval by the {@link #getMessage()} method.
      */
-    public PersistentException(final String message) {
+    public ApplicationException(final String message) {
         super(message);
     }
 
@@ -76,7 +76,7 @@ public class PersistentException extends RuntimeException {
      *            permitted, and indicates that the cause is nonexistent or
      *            unknown.)
      */
-    public PersistentException(final Throwable cause) {
+    public ApplicationException(final Throwable cause) {
         LOGGER.error("{}:{}", cause.getStackTrace()[0].getMethodName(),
                 cause.getMessage());
     }

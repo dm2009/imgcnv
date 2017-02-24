@@ -1,7 +1,8 @@
 package org.imgcnv.rest;
 
-import org.imgcnv.concurrent.JobExecutor;
 import org.imgcnv.entity.ImageResource;
+import org.imgcnv.service.concurrent.JobMapConfig;
+import org.imgcnv.service.concurrent.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -17,46 +18,22 @@ import javax.ws.rs.core.Response;
  * Class implements REST API using Java Jersey. Created by Dmitry_Slepchenkov on
  * 2/1/2017.
  */
-@Path("/")
+@Path("/rest")
 public class RestImageResource {
 
     /**
-     * Executor class.
+     * Producer for class.
      */
     @Autowired
-    private JobExecutor executor;
+    private Producer producer;
 
     /**
-     * @return the executor.
+     * JobMapConfig for class.
      */
-    public final JobExecutor getExecutor() {
-        return executor;
-    }
+    @Autowired
+    private JobMapConfig jobMap;
 
-    /**
-     *
-     * @param executorParam
-     *            the executor to set.
-     */
-    public final void setExecutor(final JobExecutor executorParam) {
-        this.executor = executorParam;
-    }
-
-    /**
-     * Create endpoint with path /linklists. Process url for download images and
-     * transform its.
-     *
-     * @param params
-     *            String with url list with delimiter
-     * @return Response
-     */
-    @POST
-    @Path("/linklists")
-    public final Response postLinkLists(final String params) {
-        return postImages(params);
-    }
-
-    /**
+     /**
      * Create endpoint with path /jobs. Process url for download images and
      * transform its.
      *
@@ -82,23 +59,12 @@ public class RestImageResource {
                 ImageResource.imageResourceSetFromString(params));
 
 
-        Long job = executor.addToExecutor(ob);
+        Long job = producer.addToProducer(ob); //executor.addToExecutor(ob);
+
         return Response.status(Response.Status.OK)
                 .entity("Your job nomber is: " + job.toString()
-                + " Server receive list: " + ob.toString()).build();
-    }
-
-    /**
-     * Create endpoint with path /linklists/{id}. Get status for job.
-     *
-     * @param id
-     *            String with representation of job id.
-     * @return Response
-     */
-    @GET
-    @Path("/linklists/{id}")
-    public final Response getLinkListsInfo(@PathParam("id") final String id) {
-        return imagesInfo(id);
+                + " Server receive list: " + ob.toString()
+                ).build();
     }
 
     /**
@@ -124,7 +90,7 @@ public class RestImageResource {
     public final Response imagesInfo(final String id) {
 
         String output = "Your job: " + id + " is finished: "
-        + executor.isReadyJob(Long.valueOf(id));
+        + jobMap.isReadyJob(Long.valueOf(id));
         return Response.status(Response.Status.OK).entity(output).build();
     }
 
