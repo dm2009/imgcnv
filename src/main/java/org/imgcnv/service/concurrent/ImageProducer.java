@@ -1,5 +1,6 @@
 package org.imgcnv.service.concurrent;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -157,6 +158,7 @@ public class ImageProducer implements Producer, ImageCallback {
             // for map
             JobFutureObject future = new JobFutureObject();
             future.setResource(item);
+            future.setDate(new Date());
 
             // image object
             ImageObject imageObject = new ImageObject();
@@ -202,5 +204,6 @@ public class ImageProducer implements Producer, ImageCallback {
         }
 
     }
+
 
 }

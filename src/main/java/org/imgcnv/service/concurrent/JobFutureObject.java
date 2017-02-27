@@ -1,6 +1,7 @@
 package org.imgcnv.service.concurrent;
 
 import java.awt.image.BufferedImage;
+import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import java.util.concurrent.Future;
@@ -30,6 +31,10 @@ public class JobFutureObject {
      */
     private CopyOnWriteArrayList<Future<Boolean>> futureImages;
 
+    /**
+     * Date hold date for clean up operations.
+     */
+    private Date date;
     /**
      *
      * @return ImageResource.
@@ -82,6 +87,22 @@ public class JobFutureObject {
         this.futureImages = futureImagesParam;
     }
 
+   /**
+    *
+    * @return date Date for clean up.
+    */
+    public final Date getDate() {
+        return date;
+    }
+
+    /**
+     *
+     * @param dateParam the Date to set.
+     */
+    public final void setDate(final Date dateParam) {
+        this.date = dateParam;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -90,6 +111,9 @@ public class JobFutureObject {
         final int prime = 31;
         int result = 1;
         result = prime * result;
+        if (date != null) {
+            result += date.hashCode();
+        }
         if (future != null) {
             result += future.hashCode();
         }
@@ -117,6 +141,13 @@ public class JobFutureObject {
             return false;
         }
         JobFutureObject other = (JobFutureObject) obj;
+        if (date == null) {
+            if (other.date != null) {
+                return false;
+            }
+        } else if (!date.equals(other.date)) {
+            return false;
+        }
         if (future == null) {
             if (other.future != null) {
                 return false;

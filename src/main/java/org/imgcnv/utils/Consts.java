@@ -55,6 +55,15 @@ public final class Consts {
     public static final String DELIMITER = ";";
 
     /**
+     * Period for Clean up job map (in seconds).
+     */
+    public static final long CLEAN_PERIOD = 60 * 60;
+
+    /**
+     * Millis in second.
+     */
+    public static final long MILLIS_IN_SEC = 1000;
+    /**
      * Constructor for this class.
      *
      */

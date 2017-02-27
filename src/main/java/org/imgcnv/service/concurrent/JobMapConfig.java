@@ -1,9 +1,16 @@
 package org.imgcnv.service.concurrent;
 
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+
+import org.imgcnv.utils.Consts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class holds JobMap for store id of job.
@@ -12,6 +19,12 @@ import java.util.concurrent.Future;
  *
  */
 public class JobMapConfig {
+
+    /**
+     * Logger for this class.
+     */
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     /**
      * Map for store Job.
      */
@@ -49,7 +62,6 @@ public class JobMapConfig {
         tasks = map.get(id);
         if (tasks == null) {
             return false;
-            // logger.info("isReadyJob: tasks == null for {}", id);
         }
 
         for (JobFutureObject item : tasks) {
@@ -72,5 +84,31 @@ public class JobMapConfig {
         return true;
 
     }
+
+    /**
+     * Method for clean old records in jobMap.
+     */
+    public final void cleanJobs() {
+        Date now = new Date();
+        long sizeBefore = getMap().size();
+        Set<Long> set = getMap().keySet();
+        Iterator<Long> it = set.iterator();
+        while (it.hasNext()) {
+            Long index = it.next();
+            List<JobFutureObject> object = getMap().get(index);
+            long seconds = 0;
+            if (object.get(0) != null) {
+                seconds = (now.getTime() - object.get(0).getDate()
+                        .getTime()) / Consts.MILLIS_IN_SEC;
+            }
+            if (seconds > Consts.CLEAN_PERIOD) {
+                it.remove();
+            }
+        }
+        long sizeAfter = getMap().size();
+        logger.info("CleanUp Result before: {}, after: {} ", sizeBefore,
+                sizeAfter);
+    }
+
 
 }

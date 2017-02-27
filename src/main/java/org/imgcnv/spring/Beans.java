@@ -3,6 +3,7 @@ package org.imgcnv.spring;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.imgcnv.service.concurrent.CleanUpStarter;
 import org.imgcnv.service.concurrent.IdGenerator;
 import org.imgcnv.service.concurrent.ImageConsumer;
 import org.imgcnv.service.concurrent.ImageConsumerStarter;
@@ -117,5 +118,14 @@ public class Beans {
     @Bean
     public ImageConsumerStarter imageConsumerStarter() {
         return new ImageConsumerStarter(imageConsumer());
+    }
+
+    /**
+    *
+    * @return CleanUpStarter.
+    */
+   @Bean
+    public CleanUpStarter cleanUpStarter() {
+        return new CleanUpStarter(jobMapConfig());
     }
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class IdGenerator {
 
     /**
-     * Id for generator image download.
+     * Id for generator for job index.
      */
     private AtomicLong id = new AtomicLong(1L);
 
