@@ -3,7 +3,6 @@ package org.imgcnv.service.concurrent;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
@@ -91,8 +90,7 @@ public class JobMapConfig {
     public final void cleanJobs() {
         Date now = new Date();
         long sizeBefore = getMap().size();
-        Set<Long> set = getMap().keySet();
-        Iterator<Long> it = set.iterator();
+        Iterator<Long> it = getMap().keySet().iterator();
         while (it.hasNext()) {
             Long index = it.next();
             List<JobFutureObject> object = getMap().get(index);

@@ -58,7 +58,8 @@ dependencies {
     compile "org.springframework:spring-beans:$springVersion"
     
     //compile "commons-io:commons-io:2.5"
-
+    
+    compile "com.wordnik:swagger-jersey2-jaxrs_2.10:1.3.12"
 
     compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
     runtime "javax.servlet:jstl:$jstlVersion"

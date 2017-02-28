@@ -5,11 +5,16 @@ import org.imgcnv.service.concurrent.JobMapConfig;
 import org.imgcnv.service.concurrent.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
@@ -19,6 +24,8 @@ import javax.ws.rs.core.Response;
  * 2/1/2017.
  */
 @Path("/rest")
+@Api(value = "/rest", description = "APIs for working with images")
+@Produces(MediaType.APPLICATION_JSON)
 public class RestImageResource {
 
     /**
@@ -43,6 +50,10 @@ public class RestImageResource {
      */
     @POST
     @Path("/jobs")
+    @ApiOperation(value = "Return value of job", httpMethod = "POST",
+    notes = "Post urls as string with ;"
+            + " delimiter for download and convert images.",
+    response = String.class)
     public final Response postJobs(final String params) {
         return postImages(params);
     }
@@ -59,7 +70,7 @@ public class RestImageResource {
                 ImageResource.imageResourceSetFromString(params));
 
 
-        Long job = producer.addToProducer(ob); //executor.addToExecutor(ob);
+        Long job = producer.addToProducer(ob);
 
         return Response.status(Response.Status.OK)
                 .entity("Your job nomber is: " + job.toString()
@@ -76,6 +87,10 @@ public class RestImageResource {
      */
     @GET
     @Path("/jobs/{id}")
+    @ApiOperation(value = "Return status of job ready or not ready",
+    httpMethod = "GET",
+    notes = "For return status of job",
+    response = String.class)
     public final Response getJobsInfo(@PathParam("id") final String id) {
         return imagesInfo(id);
     }
@@ -101,6 +116,7 @@ public class RestImageResource {
      *            String message for display
      * @return Response
      */
+    /*
     @GET
     @Path("/hello/{hello}")
     public final Response getMsg(@PathParam("hello") final String msg) {
@@ -108,4 +124,5 @@ public class RestImageResource {
         return Response.status(Response.Status.OK).entity(output).build();
 
     }
+    */
 }
