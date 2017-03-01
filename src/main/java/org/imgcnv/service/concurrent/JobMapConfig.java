@@ -99,7 +99,7 @@ public class JobMapConfig {
                 seconds = (now.getTime() - object.get(0).getDate()
                         .getTime()) / Consts.MILLIS_IN_SEC;
             }
-            if (seconds > Consts.CLEAN_PERIOD) {
+            if (seconds > Consts.CLEAN_PERIOD && isReadyJob(index)) {
                 it.remove();
             }
         }
