@@ -23,17 +23,19 @@ import org.imgcnv.exception.ApplicationException;
  * @author Dmitry_Slepchenkov
  *
  */
-public class Utils {
+public final class Utils {
 
     /**
      * Get path to web application directory.
      *
      * @return path to web application directory
      */
-    public final String getPath() {
+    public static String getPath() {
 
-        String path = this.getClass().getClassLoader().getResource("")
-                .getPath();
+        String path = Utils.class.getClassLoader().getResource("").getPath();
+                //Thread.currentThread().getStackTrace()[2].getClassName()
+                //.getClass().getClassLoader().getResource("").getPath();
+                //this.getClass().getClassLoader().getResource("").getPath();
         String fullPath;
         String reponsePath = "";
         try {
@@ -53,7 +55,7 @@ public class Utils {
      * @param dirPath
      *            String Path to directory
      */
-    public static final void createDir(final String dirPath) {
+    public static void createDir(final String dirPath) {
         File dirPathFolder = new File(dirPath);
         if (!dirPathFolder.exists()) {
             dirPathFolder.mkdir();
@@ -68,7 +70,7 @@ public class Utils {
      *            String Name of file
      * @return String File extension
      */
-    public static final String getFileExt(final String fileName) {
+    public static String getFileExt(final String fileName) {
         String newFileExt = fileName.substring(fileName.lastIndexOf('.') + 1,
                 fileName.length());
         return newFileExt;
@@ -85,7 +87,7 @@ public class Utils {
      *            used for creating additional folder
      * @return String full filename for image.
      */
-    public static final String getImageName(final String fileName,
+    public static String getImageName(final String fileName,
             final Path destination, final String index) {
         String newFileName = fileName.substring(
                 fileName.lastIndexOf(File.separator) + 1,
@@ -102,7 +104,7 @@ public class Utils {
      *
      * @return String path to directory on web application with images
      */
-    public final String getCopyPath() {
+    public static String getCopyPath() {
         return getPath() + File.separator + "pic";
     }
 
@@ -137,6 +139,20 @@ public class Utils {
             null);
 
     /**
+     * A {@link ConvolveOp} using a middle "sharp" kernel that acts (softens the
+     * image a bit) when applied to an image.
+     */
+    public static final ConvolveOp OP_SHARP_PREMIDDLE = new ConvolveOp(
+            new Kernel(5, 5, new float[]
+                       {-.125f, -.125f, -.125f, -.125f, -.125f,
+                        -.125f, .25f,  .25f, .25f, -.125f,
+                        -.125f, .25f,  1f, .25f, -.125f,
+                        -.125f, .25f,  .25f, .25f, -.125f,
+                        -.125f, -.125f, -.125f, -.125f, -.125f}),
+            ConvolveOp.EDGE_NO_OP,
+            null);
+
+     /**
      * A {@link ConvolveOp} using a light "sharp" kernel that acts (softens the
      * image a bit) when applied to an image.
      */
@@ -230,6 +246,12 @@ public class Utils {
         j.setData(image.getData());
         return j;
         }
+    /**
+     * Constructor for this class.
+     *
+     */
 
+    private Utils() {
+    }
 
 }

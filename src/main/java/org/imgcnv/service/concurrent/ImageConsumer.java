@@ -149,7 +149,9 @@ public class ImageConsumer implements Runnable {
                         callable.setUrl(url);
                         callable.setResolution(thumbail);
                         callable.setResizeService(resizeService);
-                        callable.setImage(image); // not null?
+                        if (image != null) {
+                            callable.setImage(image);
+                        }
                         futureImages.add(executorService.submit(callable));
                     }
                 }

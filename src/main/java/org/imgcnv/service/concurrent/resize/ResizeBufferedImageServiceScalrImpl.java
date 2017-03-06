@@ -39,7 +39,7 @@ public class ResizeBufferedImageServiceScalrImpl implements
 
         long result = -1;
         //logger.info("ResizedCopy started: {}", fullFileName);
-        long timeout = System.currentTimeMillis();
+        long timeout = System.currentTimeMillis(); //nanoTime
 
         BufferedImage modifiedImage = null;
         synchronized (bufferedImage) {

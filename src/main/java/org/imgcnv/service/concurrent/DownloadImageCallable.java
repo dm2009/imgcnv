@@ -91,7 +91,7 @@ public class DownloadImageCallable implements Callable<BufferedImage> {
     @Override
     public final BufferedImage call() throws Exception {
 
-        String copyPath = new Utils().getCopyPath();
+        String copyPath = Utils.getCopyPath();
         Utils.createDir(copyPath);
         String url = imageObject.getResource().getUrl();
 

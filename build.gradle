@@ -19,6 +19,8 @@ ext {
     slf4jVersion = "1.7.21"
     jerseyVersion = "2.25.1"
     
+    twelvemonkeys = "3.3.2"
+    
     springVersion = "4.2.5.RELEASE"  
 }
 
@@ -37,12 +39,20 @@ dependencies {
     
     compile "net.coobird:thumbnailator:0.4.8"
     
-    compile files("marvin/marvin_1.5.5.jar");
-    compile files("marvin/plugins/image/org.marvinproject.image.transform.scale.jar");
+    //compile files("marvin/marvin_1.5.5.jar");
+    //compile files("marvin/plugins/image/org.marvinproject.image.transform.scale.jar");
     
     compile "com.mortennobel:java-image-scaling:0.8.6"
     
     compile "org.imgscalr:imgscalr-lib:4.2"
+    
+    compile "com.twelvemonkeys.common:common-lang:$twelvemonkeys"
+    compile "com.twelvemonkeys.common:common-io:$twelvemonkeys"
+    compile "com.twelvemonkeys.common:common-image:$twelvemonkeys"
+    compile "com.twelvemonkeys.imageio:imageio-core:$twelvemonkeys"
+    compile "com.twelvemonkeys.imageio:imageio-metadata:$twelvemonkeys"
+    compile "com.twelvemonkeys.imageio:imageio-bmp:$twelvemonkeys"
+    compile "com.twelvemonkeys.imageio:imageio-jpeg:$twelvemonkeys"
     
     compile ("org.glassfish.jersey.ext:jersey-spring3:2.22.2")
      {

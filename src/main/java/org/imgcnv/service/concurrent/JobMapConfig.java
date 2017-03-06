@@ -88,8 +88,12 @@ public class JobMapConfig {
      * Method for clean old records in jobMap.
      */
     public final void cleanJobs() {
-        Date now = new Date();
         long sizeBefore = getMap().size();
+        if (sizeBefore == 0) {
+            return;
+        }
+
+        Date now = new Date();
         Iterator<Long> it = getMap().keySet().iterator();
         while (it.hasNext()) {
             Long index = it.next();

@@ -136,7 +136,7 @@ public class ConvertImageCallable implements Callable<Boolean> {
     @Override
     public final Boolean call() throws Exception {
 
-        String copyPath = new Utils().getCopyPath();
+        String copyPath = Utils.getCopyPath();
         Utils.createDir(copyPath);
 
         String targetFolderLink = copyPath + File.separator + index.toString();
