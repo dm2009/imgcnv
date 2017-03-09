@@ -69,13 +69,15 @@ public class RestImageResource {
         List<ImageResource> ob = new ArrayList<ImageResource>(
                 ImageResource.imageResourceSetFromString(params));
 
-
         Long job = producer.addToProducer(ob);
 
+        StringBuilder output = new StringBuilder("Your job nomber is: ")
+                .append(job.toString())
+                .append(" Server receive list: ")
+                .append(ob.toString());
+
         return Response.status(Response.Status.OK)
-                .entity("Your job nomber is: " + job.toString()
-                + " Server receive list: " + ob.toString()
-                ).build();
+                .entity(output.toString()).build();
     }
 
     /**
@@ -104,9 +106,12 @@ public class RestImageResource {
      */
     public final Response imagesInfo(final String id) {
 
-        String output = "Your job: " + id + " is finished: "
-        + jobMap.isReadyJob(Long.valueOf(id));
-        return Response.status(Response.Status.OK).entity(output).build();
+        StringBuilder output = new StringBuilder("Your job: ")
+                .append(id)
+                .append(" is finished: ")
+                .append(jobMap.isReadyJob(Long.valueOf(id)));
+        return Response.status(Response.Status.OK).entity(output.toString())
+                .build();
     }
 
     /**
