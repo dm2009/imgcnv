@@ -11,7 +11,7 @@ import org.imgcnv.utils.Consts;
  * @author Dmitry_Slepchenkov
  *
  */
-public class QueueConfig {
+public class QueueWrapper {
 
     /**
      * blockingQueue which link producer and consumer.
@@ -22,7 +22,7 @@ public class QueueConfig {
 
     /**
      *
-     * @return BlockingQueue<ImageObject>.
+     * @return Queue<ImageObject>.
      */
     public final BlockingQueue<ImageObject> getBlockingQueue() {
         return blockingQueue;
@@ -31,7 +31,7 @@ public class QueueConfig {
     /**
      *
      * @param queue
-     *            thr BlockingQueue<ImageObject> to set.
+     *            the Queue<ImageObject> to set.
      */
     public final void setBlockingQueue(final BlockingQueue<ImageObject>
     queue) {

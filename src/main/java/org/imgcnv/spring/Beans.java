@@ -1,16 +1,19 @@
 package org.imgcnv.spring;
 
+import java.util.concurrent.Executors;
+
 import org.imgcnv.service.concurrent.CleanUpStarter;
 import org.imgcnv.service.concurrent.IdGenerator;
 import org.imgcnv.service.concurrent.ImageConsumer;
 import org.imgcnv.service.concurrent.ImageConsumerStarter;
 import org.imgcnv.service.concurrent.ImageProducer;
-import org.imgcnv.service.concurrent.JobMapConfig;
-import org.imgcnv.service.concurrent.QueueConfig;
+import org.imgcnv.service.concurrent.JobMapWrapper;
+import org.imgcnv.service.concurrent.QueueWrapper;
 import org.imgcnv.service.concurrent.download.DownloadService;
 import org.imgcnv.service.concurrent.download.DownloadServiceImpl;
 import org.imgcnv.service.concurrent.resize.ResizeBufferedImageService;
 import org.imgcnv.service.concurrent.resize.ResizeBufferedImageServiceScalrImpl;
+import org.imgcnv.utils.Consts;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -30,8 +33,8 @@ public class Beans {
      * @return QueueConfig.
      */
     @Bean
-    public QueueConfig queueConfig() {
-        return new QueueConfig();
+    public QueueWrapper queueWrapper() {
+        return new QueueWrapper();
     }
 
     /**
@@ -49,8 +52,9 @@ public class Beans {
      */
     @Bean
     public ResizeBufferedImageService resizeService() {
-        return new ResizeBufferedImageServiceScalrImpl(); 
+        return new ResizeBufferedImageServiceScalrImpl();
                 //ResizeBufferedImageServiceTwelveImpl();
+                //ResizeBufferedImageServiceThumbnailatorImpl
     }
 
     /**
@@ -67,8 +71,8 @@ public class Beans {
      * @return JobMapConfig.
      */
     @Bean
-    public JobMapConfig jobMapConfig() {
-        return new JobMapConfig();
+    public JobMapWrapper jobMapWrapper() {
+        return new JobMapWrapper();
     }
 
     /**
@@ -77,11 +81,10 @@ public class Beans {
      */
     @Bean
     public ImageProducer imageProducer() {
-        ImageProducer bean = new ImageProducer();
-        bean.setDownloadService(downloadService());
-        bean.setIdGenerator(idGenerator());
-        bean.setItemQueue(queueConfig());
-        bean.setJobMap(jobMapConfig());
+        ImageProducer bean = new ImageProducer
+                .Builder(jobMapWrapper(),  queueWrapper(), idGenerator())
+                .downloadService(downloadService())
+                .build();
         return bean;
     }
 
@@ -91,10 +94,12 @@ public class Beans {
      */
     @Bean
     public ImageConsumer imageConsumer() {
-        ImageConsumer bean = new ImageConsumer();
-        bean.setItemQueue(queueConfig());
-        bean.setJobMap(jobMapConfig());
-        bean.setResizeService(resizeService());
+        ImageConsumer bean = new ImageConsumer
+                .Builder(jobMapWrapper(), queueWrapper())
+                .resizeService(resizeService())
+                .executorService(Executors
+                .newFixedThreadPool(Consts.RESIZE_THREADS))
+                .build();
         return bean;
     }
 
@@ -113,6 +118,6 @@ public class Beans {
     */
    @Bean
     public CleanUpStarter cleanUpStarter() {
-        return new CleanUpStarter(jobMapConfig());
+        return new CleanUpStarter(jobMapWrapper());
     }
 }

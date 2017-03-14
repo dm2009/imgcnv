@@ -2,22 +2,22 @@ package org.imgcnv.service.concurrent;
 
 import java.util.List;
 
-import org.imgcnv.entity.ImageResource;
-
 /**
  * Interface for Producer.
  * @author Dmitry_Slepchenkov
+ * @param <T>
  *
  */
-public interface Producer {
+public interface Producer<T> {
 
     /**
      * Creates tasks for download files from url list.
+     * @param <T>
      *
-     * @param resource List<ImageResource>
+     * @param resource List<T>
      *            resource with urls.
      * @return long job id.
      */
-    long addToProducer(final List<ImageResource> resource);
+    long addToProducer(final List<T> resource);
 
 }

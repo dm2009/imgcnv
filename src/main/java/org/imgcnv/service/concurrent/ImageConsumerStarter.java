@@ -47,7 +47,6 @@ public class ImageConsumerStarter {
         Thread thread = new Thread(imageConsumerParam);
         thread.start();
         logger.info("Start thread in imageConsumerStarter");
-
     }
 
 }

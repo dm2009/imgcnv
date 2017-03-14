@@ -33,9 +33,6 @@ public final class Utils {
     public static String getPath() {
 
         String path = Utils.class.getClassLoader().getResource("").getPath();
-                //Thread.currentThread().getStackTrace()[2].getClassName()
-                //.getClass().getClassLoader().getResource("").getPath();
-                //this.getClass().getClassLoader().getResource("").getPath();
         String fullPath;
         String reponsePath = "";
         try {

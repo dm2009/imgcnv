@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 import org.imgcnv.service.concurrent.resize.ResizeBufferedImageService;
+import org.imgcnv.service.concurrent.resize.ResizeBufferedImageServiceScalrImpl;
+import org.imgcnv.utils.Consts;
 import org.imgcnv.utils.Utils;
 
 /**
@@ -14,117 +16,140 @@ import org.imgcnv.utils.Utils;
  * @author Dmitry_Slepchenkov
  *
  */
-public class ConvertImageCallable implements Callable<Boolean> {
-
-    /**
-     * Resize service for image convert.
-     */
-    private ResizeBufferedImageService resizeService;
-
-    /**
-     * url, associated with image file.
-     */
-    private String url;
-    /**
-     * index which define job id (number) and folder to store images.
-     */
-    private Long index;
-    /**
-     * Image resolution in pixels.
-     */
-    private Integer resolution;
+public final class ConvertImageCallable implements Callable<Boolean> {
 
     /**
      * BufferedImage.
      */
-    private BufferedImage image;
-
+    private final BufferedImage image;
 
     /**
-     *
-     * @return ResizeService.
+     * url, associated with image file.
      */
-    public final ResizeBufferedImageService getResizeService() {
-        return resizeService;
+    private final String url;
+
+    /**
+     * Image resolution in pixels.
+     */
+    private final int resolution;
+
+    /**
+     * Resize service for image convert.
+     */
+    private final ResizeBufferedImageService resizeService;
+
+    /**
+     * index which define job id (number) and folder to store images.
+     */
+    private final long jobId;
+
+    /**
+     * Constructor for this class, using Builder.
+     *
+     * @param builder
+     *            to set to.
+     */
+    private ConvertImageCallable(final Builder builder) {
+        image = builder.image;
+        url = builder.url;
+        resizeService = builder.resizeService;
+        resolution = builder.resolution;
+        jobId = builder.jobId;
     }
 
     /**
+     * Class for builder constructor.
      *
-     * @param resizeServiceParam
-     *            the resizeService to set.
-     */
-    public final void setResizeService(final ResizeBufferedImageService
-            resizeServiceParam) {
-        this.resizeService = resizeServiceParam;
-    }
-
-    /**
+     * @author Dmitry_Slepchenkov
      *
-     * @return index
      */
-    public final Long getIndex() {
-        return index;
-    }
+    public static class Builder {
+        //Required params
+        /**
+         * BufferedImage.
+         */
+        private final BufferedImage image;
 
-    /**
-     *
-     * @param indexParam
-     *            the index to set.
-     */
-    public final void setIndex(final Long indexParam) {
-        this.index = indexParam;
-    }
+        /**
+         * url, associated with image file.
+         */
+        private final String url;
 
-    /**
-     *
-     * @return url
-     */
-    public final String getUrl() {
-        return url;
-    }
+        //Optional params
+        /**
+         * Image resolution in pixels.
+         */
+        private int resolution = Consts.SIZE_THUMB_1;
 
-    /**
-     *
-     * @param urlParam
-     *            the url to set.
-     */
-    public final void setUrl(final String urlParam) {
-        this.url = urlParam;
-    }
+        /**
+         * Resize service for image convert.
+         */
+        private ResizeBufferedImageService resizeService =
+                new ResizeBufferedImageServiceScalrImpl();
 
-    /**
-     *
-     * @return resolution
-     */
-    public final Integer getResolution() {
-        return resolution;
-    }
+        /**
+         * index which define job id (number) and folder to store images.
+         */
+        private long jobId = 0L;
 
-    /**
-     *
-     * @param resolutionParam
-     *            the resolution to set.
-     */
-    public final void setResolution(final Integer resolutionParam) {
-        this.resolution = resolutionParam;
-    }
+        /**
+         * Builder constructor.
+         *
+         * @param imageParam
+         *            BufferedImage for constructor
+         * @param urlParam
+         *            url for constructor
+         */
+        public Builder(final BufferedImage imageParam, final String urlParam) {
+            this.image = imageParam;
+            this.url = urlParam;
+        }
 
+        /**
+         * Used for set resolution.
+         *
+         * @param resolutionParam
+         *            int resolution value
+         * @return Builder for constructor.
+         */
+        public final Builder resolution(final int resolutionParam) {
+            resolution = resolutionParam;
+            return this;
+        }
 
-    /**
-     *
-     * @return BufferedImage.
-     */
-    public final BufferedImage getImage() {
-        return image;
-    }
+        /**
+         * Used for set jobId.
+         *
+         * @param jobIdParam
+         *            long for jobId
+         * @return Builder for constructor.
+         */
+        public final Builder jobId(final long jobIdParam) {
+            jobId = jobIdParam;
+            return this;
+        }
 
-    /**
-     *
-     * @param imageParam
-     *            the BufferedImage to set
-     */
-    public final void setImage(final BufferedImage imageParam) {
-        this.image = imageParam;
+        /**
+         * Used for set resizeService.
+         *
+         * @param resizeServiceParam
+         *                  as ResizeBufferedImageService for image resize.
+         * @return Builder for constructor.
+         */
+        public final Builder resizeService(final ResizeBufferedImageService
+                resizeServiceParam) {
+            resizeService = resizeServiceParam;
+            return this;
+        }
+
+        /**
+         * Used for build constructor in builder pattern.
+         *
+         * @return ConvertImageCallable object.
+         */
+        public final ConvertImageCallable build() {
+            return new ConvertImageCallable(this);
+        }
     }
 
     /**
@@ -134,12 +159,13 @@ public class ConvertImageCallable implements Callable<Boolean> {
      *             if unable to compute a result
      */
     @Override
-    public final Boolean call() throws Exception {
+    public Boolean call() throws Exception {
 
         String copyPath = Utils.getCopyPath();
         Utils.createDir(copyPath);
 
-        String targetFolderLink = copyPath + File.separator + index.toString();
+        String targetFolderLink = copyPath + File.separator
+                + jobId;
         Utils.createDir(targetFolderLink);
 
         String convPathLink = targetFolderLink + File.separator + "thmb";

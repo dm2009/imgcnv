@@ -1,10 +1,11 @@
 package org.imgcnv.service.concurrent;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 
 import org.imgcnv.utils.Consts;
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * @author Dmitry_Slepchenkov
  *
  */
-public class JobMapConfig {
+public class JobMapWrapper {
 
     /**
      * Logger for this class.
@@ -27,7 +28,7 @@ public class JobMapConfig {
     /**
      * Map for store Job.
      */
-    private ConcurrentHashMap<Long, List<JobFutureObject>> map =
+    private Map<Long, List<JobFutureObject>> map =
             new ConcurrentHashMap<Long, List<JobFutureObject>>();
 
     /**
@@ -35,18 +36,8 @@ public class JobMapConfig {
      *
      * @return map.
      */
-    public final ConcurrentHashMap<Long, List<JobFutureObject>> getMap() {
+    public final Map<Long, List<JobFutureObject>> getMap() {
         return map;
-    }
-
-    /**
-     *
-     * @param mapParam
-     *            the ConcurrentHashMap to set.
-     */
-    public final void setMap(final ConcurrentHashMap<Long,
-            List<JobFutureObject>> mapParam) {
-        this.map = mapParam;
     }
 
     /**
@@ -68,7 +59,7 @@ public class JobMapConfig {
                 return false;
             }
 
-            CopyOnWriteArrayList<Future<Boolean>> list = item.getFutureImages();
+            List<Future<Boolean>> list = item.getFutureImages();
             if (list.size() == 0) {
                 return false;
             } else {
@@ -93,15 +84,19 @@ public class JobMapConfig {
             return;
         }
 
-        Date now = new Date();
+        LocalDateTime now = LocalDateTime.now();
+
         Iterator<Long> it = getMap().keySet().iterator();
         while (it.hasNext()) {
             Long index = it.next();
             List<JobFutureObject> object = getMap().get(index);
             long seconds = 0;
             if (object.get(0) != null) {
-                seconds = (now.getTime() - object.get(0).getDate()
-                        .getTime()) / Consts.MILLIS_IN_SEC;
+                seconds = (now.toInstant(ZoneOffset.UTC)
+                        .toEpochMilli() - object.get(0).getDateTime()
+                        .toInstant(ZoneOffset.UTC)
+                        .toEpochMilli()) / Consts.MILLIS_IN_SEC;
+                logger.info("CleanUp Progress seconds: {}", seconds);
             }
             if (seconds > Consts.CLEAN_PERIOD && isReadyJob(index)) {
                 it.remove();

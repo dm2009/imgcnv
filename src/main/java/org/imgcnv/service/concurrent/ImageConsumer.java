@@ -3,20 +3,20 @@ package org.imgcnv.service.concurrent;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.imgcnv.exception.ApplicationException;
 import org.imgcnv.service.concurrent.resize.ResizeBufferedImageService;
+import org.imgcnv.service.concurrent.resize.ResizeBufferedImageServiceScalrImpl;
 import org.imgcnv.utils.Consts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Consumer which consume downloaded images.
+ *
  * @author Dmitry_Slepchenkov
  *
  */
@@ -28,85 +28,118 @@ public class ImageConsumer implements Runnable {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
-     * JobMapConfig.
+     * JobMapWrapper jobMap for storage job information.
      */
-    private JobMapConfig jobMap;
+    private JobMapWrapper jobMap;
+
+    /**
+     * QueueWrapper blockQueue for storage task.
+     */
+    private QueueWrapper itemQueue;
+
     /**
      * ExecutorService for execute tasks.
      */
-    private ExecutorService executorService = Executors.newFixedThreadPool(
-            Runtime.getRuntime().availableProcessors());
+    private ExecutorService executorService;
 
     /**
      * Resize service for image convert.
      */
     private ResizeBufferedImageService resizeService;
 
-    /**
-     * QueueConfig blockQueue for storage task.
-     */
-    private QueueConfig itemQueue;
 
     /**
+     * Constructor for this class, using Builder.
      *
-     * @return ExecutorService.
+     * @param builder
+     *            to set to.
      */
-    public final ExecutorService getExecutorService() {
-        return executorService;
+    public ImageConsumer(final Builder builder) {
+        itemQueue = builder.itemQueue;
+        jobMap = builder.jobMap;
+        executorService = builder.executorService;
+        resizeService = builder.resizeService;
     }
 
     /**
+     * Class for builder constructor.
      *
-     * @param executorServiceParam
-     *            the ExecutorService to set.
+     * @author Dmitry_Slepchenkov
+     *
      */
-    public final void setExecutorService(
-            final ExecutorService executorServiceParam) {
-        this.executorService = executorServiceParam;
-    }
+    public static class Builder {
+        // Required params
+        /**
+         * JobMapConfig.
+         */
+        private JobMapWrapper jobMap;
 
-    /**
-     *
-     * @param itemQueueParam
-     *            the QueueConfig to set.
-     */
-    public final void setItemQueue(final QueueConfig itemQueueParam) {
-        this.itemQueue = itemQueueParam;
-    }
+        /**
+         * QueueConfig blockQueue for storage task.
+         */
+        private QueueWrapper itemQueue;
 
-    /**
-     *
-     * @return JobMapConfig, which encapsulate JobMap.
-     */
-    public final JobMapConfig getJobMap() {
-        return jobMap;
-    }
+        // Optional params
+        /**
+         * ExecutorService for execute tasks.
+         */
+        private ExecutorService executorService = Executors
+                .newFixedThreadPool(Consts.RESIZE_THREADS);
 
-    /**
-     *
-     * @param jobMapParam
-     *            the JobMapConfig object to set.
-     */
-    public final void setJobMap(final JobMapConfig jobMapParam) {
-        this.jobMap = jobMapParam;
-    }
+        /**
+         * Resize service for image convert.
+         */
+        private ResizeBufferedImageService resizeService =
+                new ResizeBufferedImageServiceScalrImpl();
 
-    /**
-     *
-     * @return ResizeBufferedImageService.
-     */
-    public final ResizeBufferedImageService getResizeService() {
-        return resizeService;
-    }
+        /**
+         * Builder constructor.
+         *
+         * @param jobMapParam
+         *            as JobMapWrapper to set.
+         * @param itemQueueParam
+         *            as QueueWrapper to set.
+         */
+        public Builder(final JobMapWrapper jobMapParam,
+                final QueueWrapper itemQueueParam) {
+            this.jobMap = jobMapParam;
+            this.itemQueue = itemQueueParam;
+        }
 
-    /**
-     *
-     * @param resizeServiceParam
-     *            the ResizeBufferedImageService to set.
-     */
-    public final void setResizeService(
-            final ResizeBufferedImageService resizeServiceParam) {
-        this.resizeService = resizeServiceParam;
+        /**
+         * Used for set resizeService.
+         *
+         * @param resizeServiceParam
+         *            as ResizeBufferedImageService for image resize.
+         * @return Builder for constructor.
+         */
+        public final Builder resizeService(final ResizeBufferedImageService
+                resizeServiceParam) {
+            resizeService = resizeServiceParam;
+            return this;
+        }
+
+        /**
+         * Used for set executorService.
+         *
+         * @param executorServiceParam
+         *            as ExecutorService for callable submit.
+         * @return Builder for constructor.
+         */
+        public final Builder executorService(final ExecutorService
+                executorServiceParam) {
+            executorService = executorServiceParam;
+            return this;
+        }
+
+        /**
+         * Used for build constructor in builder pattern.
+         *
+         * @return ConvertImageCallable object.
+         */
+        public final ImageConsumer build() {
+            return new ImageConsumer(this);
+        }
     }
 
     /**
@@ -118,13 +151,12 @@ public class ImageConsumer implements Runnable {
         try {
             imageObject = itemQueue.getBlockingQueue().take();
             if (imageObject != null) {
-                image = imageObject.getFuture().get();
+                image = imageObject.getImage(); //need to put image here ...
+
                 logger.info("Take image for id {} url {}", imageObject.getId(),
                         imageObject.getResource().getUrl());
             }
         } catch (InterruptedException e) {
-            throw new ApplicationException(e);
-        } catch (ExecutionException e) {
             throw new ApplicationException(e);
         }
 
@@ -136,22 +168,21 @@ public class ImageConsumer implements Runnable {
 
             for (JobFutureObject fo : tasks) {
                 if (fo.getResource().getUrl().equals(url)) {
-                    CopyOnWriteArrayList<Future<Boolean>> futureImages =
+                    List<Future<Boolean>> futureImages =
                             fo.getFutureImages();
-                    List<Integer> thumbails = Arrays.asList(Consts.SIZE_THUMB_1,
+                    List<Integer> thumbails = Arrays.asList(
+                            Consts.SIZE_THUMB_1,
                             Consts.SIZE_THUMB_2,
                             Consts.SIZE_THUMB_3);
 
                     for (Integer thumbail : thumbails) {
+
                         ConvertImageCallable callable =
-                                new ConvertImageCallable();
-                        callable.setIndex(id);
-                        callable.setUrl(url);
-                        callable.setResolution(thumbail);
-                        callable.setResizeService(resizeService);
-                        if (image != null) {
-                            callable.setImage(image);
-                        }
+                                new ConvertImageCallable.Builder(image, url)
+                                .resolution(thumbail)
+                                .jobId(id)
+                                .resizeService(resizeService)
+                                .build();
                         futureImages.add(executorService.submit(callable));
                     }
                 }
@@ -166,6 +197,11 @@ public class ImageConsumer implements Runnable {
     public final void run() {
         while (true) {
             consume();
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                throw new ApplicationException(e);
+            }
         }
 
     }

@@ -6,6 +6,9 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 import org.imgcnv.service.concurrent.download.DownloadService;
+import org.imgcnv.service.concurrent.download.DownloadServiceImpl;
+import org.imgcnv.service.concurrent.read.ReadService;
+import org.imgcnv.service.concurrent.read.ReadServiceImpl;
 import org.imgcnv.utils.Utils;
 
 /**
@@ -14,72 +17,108 @@ import org.imgcnv.utils.Utils;
  * @author Dmitry_Slepchenkov
  *
  */
-public class DownloadImageCallable implements Callable<BufferedImage> {
-    /**
-     * Download service for image download.
-     */
-    private DownloadService downloadService;
+public final class DownloadImageCallable implements Callable<Boolean> {
 
-    /**
-     * Callback function for return result.
-     */
-    private ImageCallback callback;
-
-    /**
-     *
-     * @return DownloadService.
-     */
-    public final DownloadService getDownloadService() {
-        return downloadService;
-    }
-
+    //Required params
     /**
      * ImageObject for store information.
      */
     private ImageObject imageObject;
 
     /**
-     *
-     * @param downloadServiceParam
-     *            the downloadService to set.
+     * Callback function for return result.
      */
-    public final void setDownloadService(final DownloadService
-            downloadServiceParam) {
-        this.downloadService = downloadServiceParam;
+    private ImageCallback callback;
+
+    //Optional params
+    /**
+     * Download service for image download.
+     */
+    private DownloadService downloadService;
+
+    /**
+     * Read image service for image download.
+     */
+    private ReadService readService;
+
+    /**
+     * Class for Builder pattern (constructor for DownloadImageCallable).
+     *
+     * @author Dmitry_Slepchenkov
+     *
+     */
+    public static class Builder {
+
+        /**
+         * ImageObject for store information.
+         */
+        private final ImageObject imageObject;
+
+        /**
+         * Callback function for return result.
+         */
+        private final ImageCallback callback;
+
+        /**
+         * Download service for image download.
+         */
+        private DownloadService downloadService =
+                new DownloadServiceImpl();
+
+        /**
+         * Read service for image read.
+         */
+        private ReadService readService =
+                new ReadServiceImpl();
+
+        /**
+         * Builder constructor with params.
+         *
+         * @param imageObjectParam
+         *            as ImageObject to set.
+         * @param callbackParam
+         *            as ImageCallback to set.
+         */
+        public Builder(final ImageObject imageObjectParam,
+                final ImageCallback callbackParam) {
+            this.imageObject = imageObjectParam;
+            this.callback = callbackParam;
+        }
+
+        /**
+         * Used to set DownloadService.
+         *
+         * @param downloadServiceParam
+         *            as DownloadService
+         * @return Builder
+         */
+        public final Builder downloadService(final DownloadService
+                downloadServiceParam) {
+            downloadService = downloadServiceParam;
+            return this;
+        }
+
+        /**
+         * build method of Builder pattern.
+         *
+         * @return DownloadImageCallable.
+         */
+        public final DownloadImageCallable build() {
+            return new DownloadImageCallable(this);
+        }
     }
 
     /**
+     * Constructor for this class, for builder.
      *
-     * @return ImageCallback
+     * @param builder
+     *            to set Builder
      */
-    public final ImageCallback getCallback() {
-        return callback;
-    }
-
-    /**
-     *
-     * @param callbackParam
-     *            the callback to set.
-     */
-    public final void setCallback(final ImageCallback callbackParam) {
-        this.callback = callbackParam;
-    }
-
-    /**
-     *
-     * @return ImageObject
-     */
-    public final ImageObject getImageObject() {
-        return imageObject;
-    }
-
-    /**
-     *
-     * @param imageObjectParam
-     *            the ImageObject to set.
-     */
-    public final void setImageObject(final ImageObject imageObjectParam) {
-        this.imageObject = imageObjectParam;
+    private DownloadImageCallable(final Builder builder) {
+        this.imageObject = builder.imageObject;
+        this.callback = builder.callback;
+        this.downloadService = builder.downloadService;
+        this.readService = builder.readService;
     }
 
     /**
@@ -89,7 +128,7 @@ public class DownloadImageCallable implements Callable<BufferedImage> {
      *             if unable to compute a result.
      */
     @Override
-    public final BufferedImage call() throws Exception {
+    public Boolean call() throws Exception {
 
         String copyPath = Utils.getCopyPath();
         Utils.createDir(copyPath);
@@ -100,16 +139,27 @@ public class DownloadImageCallable implements Callable<BufferedImage> {
                 + imageObject.getId();
         Utils.createDir(targetFolderLink);
 
-        Path targetPath = new File(targetFolderLink + File.separator
-                + fileName).toPath();
-        BufferedImage copyResult = downloadService.download(url, targetPath);
+        Path targetPath = new File(targetFolderLink + File.separator + fileName)
+                .toPath();
+        Boolean copyResult = downloadService.download(url, targetPath);
+        BufferedImage image = null;
 
         if (copyResult != null && callback != null) {
-            // logger.info("image != null, callback != null");
-            callback.callFinished(imageObject);
+            image = readService.read(targetPath);
         }
 
-        return copyResult;
+        if (image != null) {
+            //logger.info("image != null, callback != null");
+            //Create new object with BufferedImage
+            ImageObject modifiedImageObject =
+                    new ImageObject.Builder(imageObject.getResource())
+                    .jobId(imageObject.getId())
+                    .image(image)
+                    .build();
+            callback.callFinished(modifiedImageObject);
+        }
+
+        return image != null;
     }
 
 }

@@ -1,8 +1,7 @@
 package org.imgcnv.service.concurrent;
 
-import java.awt.image.BufferedImage;
-import java.util.Date;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import java.util.concurrent.Future;
 
@@ -14,7 +13,7 @@ import org.imgcnv.entity.ImageResource;
  * @author Dmitry_Slepchenkov
  *
  */
-public class JobFutureObject {
+public final class JobFutureObject {
 
     /**
      * ImageResource url wrapper.
@@ -22,97 +21,153 @@ public class JobFutureObject {
     private ImageResource resource;
 
     /**
-     * Future<BufferedImage> holds image for copy.
+     * Future<Boolean> holds image download result.
      */
-    private Future<BufferedImage> future;
+    private Future<Boolean> future;
 
     /**
-     * List Future<Boolean> holds images for convert (resize).
+     * List Future<Boolean> holds images links for convert (resize).
      */
-    private CopyOnWriteArrayList<Future<Boolean>> futureImages;
+    private List<Future<Boolean>> futureImages;
 
     /**
      * Date hold date for clean up operations.
      */
-    private Date date;
+    private LocalDateTime dateTime;
+
     /**
      *
      * @return ImageResource.
      */
-    public final ImageResource getResource() {
+    public ImageResource getResource() {
         return resource;
     }
 
     /**
      *
-     * @param resourceParam
-     *            the ImageResource to set.
+     * @return Future<Boolean>.
      */
-    public final void setResource(final ImageResource resourceParam) {
-        this.resource = resourceParam;
-    }
-
-    /**
-     *
-     * @return Future<BufferedImage>.
-     */
-    public final Future<BufferedImage> getFuture() {
+    public Future<Boolean> getFuture() {
         return future;
-    }
-
-    /**
-     *
-     * @param futureParam
-     *            The Future<BufferedImage> to set.
-     */
-    public final void setFuture(final Future<BufferedImage> futureParam) {
-        this.future = futureParam;
     }
 
     /**
      *
      * @return List Future<Boolean>.
      */
-    public final CopyOnWriteArrayList<Future<Boolean>> getFutureImages() {
+    public List<Future<Boolean>> getFutureImages() {
         return futureImages;
-    }
-
-    /**
-     *
-     * @param futureImagesParam
-     *            List Future<Boolean> to set.
-     */
-    public final void setFutureImages(
-            final CopyOnWriteArrayList<Future<Boolean>> futureImagesParam) {
-        this.futureImages = futureImagesParam;
     }
 
    /**
     *
-    * @return date Date for clean up.
+    * @return date LocalDateTime for clean up.
     */
-    public final Date getDate() {
-        return date;
+    public LocalDateTime getDateTime() {
+        return dateTime;
     }
 
     /**
+     * Class for Builder pattern (constructor for DownloadImageCallable).
      *
-     * @param dateParam the Date to set.
+     * @author Dmitry_Slepchenkov
+     *
      */
-    public final void setDate(final Date dateParam) {
-        this.date = dateParam;
+    public static class Builder {
+
+        /**
+         * ImageResource url wrapper.
+         */
+        private final ImageResource resource;
+
+        /**
+         * Future<Boolean> holds image download result.
+         */
+        private Future<Boolean> future;
+
+        /**
+         * List Future<Boolean> holds images links for convert (resize).
+         */
+        private List<Future<Boolean>> futureImages;
+
+        /**
+         * Date hold date for clean up operations.
+         */
+        private LocalDateTime dateTime = LocalDateTime.now();
+
+        /**
+         *  Builder constructor with params.
+         * @param resourceParam as ImageResource to set.
+         */
+        public Builder(final ImageResource resourceParam) {
+            resource = resourceParam;
+        }
+
+        /**
+         * Used to set future  Future<Boolean>.
+         * @param futureParam as Future<Boolean>.
+         * @return Builder.
+         */
+        public final Builder future(final Future<Boolean> futureParam) {
+            future = futureParam;
+            return this;
+        }
+
+        /**
+         * Used to set CopyOnWriteArrayList<Future<Boolean>>.
+         * @param futureImagesArg as List<Future<Boolean>>.
+         * @return Builder.
+         */
+        public final Builder futureImages(
+                final List<Future<Boolean>> futureImagesArg) {
+            futureImages = futureImagesArg;
+            return this;
+        }
+
+        /**
+         * Used to set LocalDateTime dateTime.
+         * @param dateTimeParam as LocalDateTime.
+         * @return Builder.
+         */
+        public final Builder dateTime(final  LocalDateTime dateTimeParam) {
+            dateTime = dateTimeParam;
+            return this;
+        }
+
+        /**
+         * build method of Builder pattern.
+         *
+         * @return JobFutureObject.
+         */
+        public final JobFutureObject build() {
+            return new JobFutureObject(this);
+        }
+
+    }
+
+    /**
+     * Constructor for this class, for builder.
+     *
+     * @param builder
+     *            to set Builder
+     */
+    private JobFutureObject(final Builder builder) {
+        this.resource = builder.resource;
+        this.dateTime = builder.dateTime;
+        this.future = builder.future;
+        this.futureImages = builder.futureImages;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result;
-        if (date != null) {
-            result += date.hashCode();
+        if (dateTime != null) {
+            result += dateTime.hashCode();
         }
         if (future != null) {
             result += future.hashCode();
@@ -130,7 +185,7 @@ public class JobFutureObject {
      * {@inheritDoc}
      */
     @Override
-    public final boolean equals(final Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -141,11 +196,11 @@ public class JobFutureObject {
             return false;
         }
         JobFutureObject other = (JobFutureObject) obj;
-        if (date == null) {
-            if (other.date != null) {
+        if (dateTime == null) {
+            if (other.dateTime != null) {
                 return false;
             }
-        } else if (!date.equals(other.date)) {
+        } else if (!dateTime.equals(other.dateTime)) {
             return false;
         }
         if (future == null) {

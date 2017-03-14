@@ -2,6 +2,8 @@ package org.imgcnv.service.concurrent.resize;
 
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
 import org.imgcnv.utils.Utils;
 import org.imgscalr.Scalr;
@@ -39,7 +41,7 @@ public class ResizeBufferedImageServiceScalrImpl implements
 
         long result = -1;
         //logger.info("ResizedCopy started: {}", fullFileName);
-        long timeout = System.currentTimeMillis(); //nanoTime
+        long timeout = Instant.now().getNano();
 
         BufferedImage modifiedImage = null;
         synchronized (bufferedImage) {
@@ -48,10 +50,9 @@ public class ResizeBufferedImageServiceScalrImpl implements
                 Utils.OP_SHARP_MIDDLE);
         }
         result = Utils.saveBufferedImage(modifiedImage, fullFileName);
-
-        timeout = System.currentTimeMillis() - timeout;
-        logger.info("ResizedCopy: {} end timeout {}", fullFileName,
-                timeout);
+        timeout = Instant.now().getNano() - timeout;
+        logger.info("ResizedCopy: {} end timeout {} ms", fullFileName,
+                TimeUnit.MILLISECONDS.convert(timeout, TimeUnit.NANOSECONDS));
         return result;
     }
 

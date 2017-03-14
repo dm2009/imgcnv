@@ -1,6 +1,6 @@
 package org.imgcnv.service.concurrent;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import org.imgcnv.entity.ImageResource;
 import org.imgcnv.exception.ApplicationException;
 import org.imgcnv.service.concurrent.download.DownloadService;
+import org.imgcnv.service.concurrent.download.DownloadServiceImpl;
 import org.imgcnv.utils.Consts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * @author Dmitry_Slepchenkov
  *
  */
-public class ImageProducer implements Producer, ImageCallback {
+public class ImageProducer implements Producer<ImageResource>, ImageCallback {
 
     /**
      * Logger for this class.
@@ -35,116 +36,133 @@ public class ImageProducer implements Producer, ImageCallback {
     /**
      * Queue for link producer with consumer.
      */
-    private QueueConfig itemQueue;
+    private QueueWrapper itemQueue;
 
     /**
      * Map for store jobs.
      */
-    private JobMapConfig jobMap;
+    private JobMapWrapper jobMap;
 
     /**
      * ExecutorService to start tasks for download.
      */
-    private ExecutorService executorService = Executors.newFixedThreadPool(
-            Consts.DOWNLOAD_THREADS);
+    private ExecutorService executorService;
 
     /**
      * Download service.
      */
     private DownloadService downloadService;
 
+
     /**
+     * Constructor for this class, using Builder.
      *
-     * @return IdGenerator
+     * @param builder
+     *            to set to.
      */
-    public final IdGenerator getIdGenerator() {
-        return idGenerator;
+    public ImageProducer(final Builder builder) {
+        idGenerator = builder.idGenerator;
+        jobMap = builder.jobMap;
+        itemQueue = builder.itemQueue;
+        executorService = builder.executorService;
+        downloadService = builder.downloadService;
     }
 
     /**
+     * Class for builder constructor.
      *
-     * @param generator
-     *            the IdGenerator to set.
+     * @author Dmitry_Slepchenkov
+     *
      */
-    public final void setIdGenerator(final IdGenerator generator) {
-        this.idGenerator = generator;
-    }
+    public static class Builder {
 
-    /**
-     *
-     * @return QueueConfig.
-     */
-    public final QueueConfig getItemQueue() {
-        return itemQueue;
-    }
+        // Required params
+        /**
+         * IdGenerator idGenerator for unique id.
+         */
+        private IdGenerator idGenerator;
 
-    /**
-     *
-     * @param queue
-     *            the QueueConfig to set.
-     */
-    public final void setItemQueue(final QueueConfig queue) {
-        this.itemQueue = queue;
-    }
+        /**
+         * JobMapWrapper jobMap for storage job information.
+         */
+        private JobMapWrapper jobMap;
 
-    /**
-     *
-     * @return JobMapConfig.
-     */
-    public final JobMapConfig getJobMap() {
-        return jobMap;
-    }
+        /**
+         * QueueConfig blockQueue for storage task.
+         */
+        private QueueWrapper itemQueue;
 
-    /**
-     *
-     * @param jobMapParam
-     *            the JobMapConfig to set.
-     */
-    public final void setJobMap(final JobMapConfig jobMapParam) {
-        this.jobMap = jobMapParam;
-    }
+        // Optional params
+        /**
+         * ExecutorService for execute tasks.
+         */
+        private ExecutorService executorService =
+                Executors.newFixedThreadPool(Consts.DOWNLOAD_THREADS);
 
-    /**
-     *
-     * @return ExecutorService.
-     */
-    public final ExecutorService getExecutorService() {
-        return executorService;
-    }
+        /**
+         * Download service.
+         */
+        private DownloadService downloadService = new DownloadServiceImpl();
 
-    /**
-     *
-     * @param executorServiceParam
-     *            the ExecutorService to set.
-     */
-    public final void setExecutorService(
-            final ExecutorService executorServiceParam) {
-        this.executorService = executorServiceParam;
-    }
+        /**
+         * Builder constructor.
+         *
+         * @param jobMapParam
+         *            as JobMapWrapper to set.
+         * @param itemQueueParam
+         *            as QueueWrapper to set.
+         * @param idGeneratorParam
+         *            as IdGenerator to set.
+         */
+        public Builder(final JobMapWrapper jobMapParam,
+                final QueueWrapper itemQueueParam,
+                final IdGenerator idGeneratorParam) {
+            this.jobMap = jobMapParam;
+            this.itemQueue = itemQueueParam;
+            this.idGenerator = idGeneratorParam;
+        }
 
-    /**
-     *
-     * @return DownloadService.
-     */
-    public final DownloadService getDownloadService() {
-        return downloadService;
-    }
+        /**
+         * Used for set downloadService.
+         *
+         * @param downloadServiceParam
+         *            as DownloadService for image download.
+         * @return Builder for constructor.
+         */
+        public final Builder downloadService(final DownloadService
+                downloadServiceParam) {
+            downloadService = downloadServiceParam;
+            return this;
+        }
 
-    /**
-     *
-     * @param downloadServiceArg
-     *            the DownloadService to set.
-     */
-    public final void setDownloadService(
-            final DownloadService downloadServiceArg) {
-        this.downloadService = downloadServiceArg;
+        /**
+         * Used for set executorService.
+         *
+         * @param executorServiceParam
+         *            as ExecutorService for callable submit.
+         * @return Builder for constructor.
+         */
+        public final Builder executorService(final ExecutorService
+                executorServiceParam) {
+            executorService = executorServiceParam;
+            return this;
+        }
+
+        /**
+         * Used for build constructor in builder pattern.
+         *
+         * @return ImageProducer object.
+         */
+        public final ImageProducer build() {
+            return new ImageProducer(this);
+        }
     }
 
     /**
      * Creates tasks for download files from url list.
      *
-     * @param resource List<ImageResource>
-     *            resource with urls.
+     * @param resource
+     *            List<ImageResource> resource with urls.
      * @return long job id.
      */
     @Override
@@ -155,29 +173,30 @@ public class ImageProducer implements Producer, ImageCallback {
                 new CopyOnWriteArrayList<JobFutureObject>();
 
         for (ImageResource item : resource) {
-            // for map
-            JobFutureObject future = new JobFutureObject();
-            future.setResource(item);
-            future.setDate(new Date());
-
             // image object
-            ImageObject imageObject = new ImageObject();
-            imageObject.setResource(item);
-            imageObject.setId(id);
+            ImageObject imageObject = new ImageObject.Builder(item)
+                    .jobId(id)
+                    .build();
 
-            DownloadImageCallable callable = new DownloadImageCallable();
-            callable.setDownloadService(downloadService);
-            callable.setCallback(this);
-            callable.setImageObject(imageObject);
+            DownloadImageCallable callable =
+                    new DownloadImageCallable.Builder(imageObject, this)
+                    .downloadService(downloadService)
+                    .build();
 
-            imageObject.setFuture(executorService.submit(callable));
-
-            // assamble jobMap
-            CopyOnWriteArrayList<Future<Boolean>> futureImages =
+            // assamble futureObject for jobMap
+            List<Future<Boolean>> futureImages =
                     new CopyOnWriteArrayList<Future<Boolean>>();
-            future.setFutureImages(futureImages);
-            future.setFuture(imageObject.getFuture());
-            tasks.add(future);
+
+            JobFutureObject futureObject = new JobFutureObject
+                    .Builder(item)
+                    .dateTime(LocalDateTime.now())
+                    .futureImages(futureImages)
+                    .future(executorService.submit(callable))
+                    .build();
+            tasks.add(futureObject);
+
+            logger.info("Put item with id={}, date={} to futureObject.", id,
+                    futureObject.getDateTime());
         }
         jobMap.getMap().put(id, tasks);
         logger.info("Put tasks id={} to map", id);
@@ -188,7 +207,8 @@ public class ImageProducer implements Producer, ImageCallback {
     /**
      * Callback function.
      *
-     * @param imageObject ImageObject
+     * @param imageObject
+     *            ImageObject
      */
     @Override
     public final void callFinished(final ImageObject imageObject) {
@@ -204,6 +224,5 @@ public class ImageProducer implements Producer, ImageCallback {
         }
 
     }
-
 
 }

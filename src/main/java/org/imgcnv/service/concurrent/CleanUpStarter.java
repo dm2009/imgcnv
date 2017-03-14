@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class start imageConsumer as Thread.
+ * Class start Cleanup starter.
  *
  * @author Dmitry_Slepchenkov
  *
@@ -20,7 +20,7 @@ public class CleanUpStarter {
     /**
      * JobMapConfig.
      */
-    private JobMapConfig jobMap;
+    private JobMapWrapper jobMap;
 
     /**
      * ScheduledExecutorService executor for clean job.
@@ -32,7 +32,7 @@ public class CleanUpStarter {
      *
      * @return jobMap JobMapConfig.
      */
-    public final JobMapConfig getJobMap() {
+    public final JobMapWrapper getJobMap() {
         return jobMap;
     }
 
@@ -41,7 +41,7 @@ public class CleanUpStarter {
      * @param jobMapParam
      *            the JobMapConfig to set.
      */
-    public final void setJobMap(final JobMapConfig jobMapParam) {
+    public final void setJobMap(final JobMapWrapper jobMapParam) {
         this.jobMap = jobMapParam;
     }
 
@@ -82,7 +82,7 @@ public class CleanUpStarter {
      * @param jobMapParam the
      *            JobMapConfig to set.
      */
-    public CleanUpStarter(final JobMapConfig jobMapParam) {
+    public CleanUpStarter(final JobMapWrapper jobMapParam) {
 
         Runnable clean = new Runnable() {
 
