@@ -1,5 +1,6 @@
 package org.imgcnv.service.concurrent;
 
+import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -11,7 +12,10 @@ import org.imgcnv.entity.ImageResource;
 import org.imgcnv.exception.ApplicationException;
 import org.imgcnv.service.concurrent.download.DownloadService;
 import org.imgcnv.service.concurrent.download.DownloadServiceImpl;
+import org.imgcnv.service.concurrent.read.ReadService;
+import org.imgcnv.service.concurrent.read.ReadServiceImpl;
 import org.imgcnv.utils.Consts;
+import org.imgcnv.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +57,10 @@ public class ImageProducer implements Producer<ImageResource>, ImageCallback {
      */
     private DownloadService downloadService;
 
+    /**
+     * Read image service.
+     */
+    private ReadService readService;
 
     /**
      * Constructor for this class, using Builder.
@@ -66,6 +74,7 @@ public class ImageProducer implements Producer<ImageResource>, ImageCallback {
         itemQueue = builder.itemQueue;
         executorService = builder.executorService;
         downloadService = builder.downloadService;
+        readService = builder.readService;
     }
 
     /**
@@ -105,6 +114,11 @@ public class ImageProducer implements Producer<ImageResource>, ImageCallback {
         private DownloadService downloadService = new DownloadServiceImpl();
 
         /**
+         * Read image service.
+         */
+        private ReadService readService = new ReadServiceImpl();
+
+        /**
          * Builder constructor.
          *
          * @param jobMapParam
@@ -132,6 +146,18 @@ public class ImageProducer implements Producer<ImageResource>, ImageCallback {
         public final Builder downloadService(final DownloadService
                 downloadServiceParam) {
             downloadService = downloadServiceParam;
+            return this;
+        }
+
+        /**
+         * Used for set readService.
+         * @param readServiceParam
+         *           as ReadService for image file read.
+         * @return Builder for constructor.
+         */
+        public final Builder readService(final ReadService
+                readServiceParam) {
+            readService = readServiceParam;
             return this;
         }
 
@@ -213,11 +239,22 @@ public class ImageProducer implements Producer<ImageResource>, ImageCallback {
     @Override
     public final void callFinished(final ImageObject imageObject) {
 
+        //Replace Image
+        BufferedImage image = readService.read(
+                Utils.getImagePath(imageObject.getId(),
+                        imageObject.getResource().getUrl()));
+        //Create new object with BufferedImage, maybe check null?
+        ImageObject modifiedImageObject =
+                new ImageObject.Builder(imageObject.getResource())
+                .jobId(imageObject.getId())
+                .image(image)
+                .build();
+
         try {
-            itemQueue.getBlockingQueue().put(imageObject);
+            itemQueue.getBlockingQueue().put(modifiedImageObject);
             logger.info("Put imageObject id={} url={} into Queue",
-                    imageObject.getId(),
-                    imageObject.getResource().getUrl());
+                    modifiedImageObject.getId(),
+                    modifiedImageObject.getResource().getUrl());
 
         } catch (InterruptedException e) {
             throw new ApplicationException(e);

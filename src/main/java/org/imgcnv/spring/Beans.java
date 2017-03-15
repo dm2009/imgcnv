@@ -11,6 +11,8 @@ import org.imgcnv.service.concurrent.JobMapWrapper;
 import org.imgcnv.service.concurrent.QueueWrapper;
 import org.imgcnv.service.concurrent.download.DownloadService;
 import org.imgcnv.service.concurrent.download.DownloadServiceImpl;
+import org.imgcnv.service.concurrent.read.ReadService;
+import org.imgcnv.service.concurrent.read.ReadServiceImpl;
 import org.imgcnv.service.concurrent.resize.ResizeBufferedImageService;
 import org.imgcnv.service.concurrent.resize.ResizeBufferedImageServiceScalrImpl;
 import org.imgcnv.utils.Consts;
@@ -67,6 +69,14 @@ public class Beans {
     }
 
     /**
+    *
+    * @return ReadService.
+    */
+   @Bean
+   public ReadService readService() {
+       return new ReadServiceImpl();
+   }
+    /**
      *
      * @return JobMapConfig.
      */
@@ -84,6 +94,7 @@ public class Beans {
         ImageProducer bean = new ImageProducer
                 .Builder(jobMapWrapper(),  queueWrapper(), idGenerator())
                 .downloadService(downloadService())
+                .readService(readService())
                 .build();
         return bean;
     }

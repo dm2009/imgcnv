@@ -1,14 +1,10 @@
 package org.imgcnv.service.concurrent;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 import org.imgcnv.service.concurrent.download.DownloadService;
 import org.imgcnv.service.concurrent.download.DownloadServiceImpl;
-import org.imgcnv.service.concurrent.read.ReadService;
-import org.imgcnv.service.concurrent.read.ReadServiceImpl;
 import org.imgcnv.utils.Utils;
 
 /**
@@ -37,11 +33,6 @@ public final class DownloadImageCallable implements Callable<Boolean> {
     private DownloadService downloadService;
 
     /**
-     * Read image service for image download.
-     */
-    private ReadService readService;
-
-    /**
      * Class for Builder pattern (constructor for DownloadImageCallable).
      *
      * @author Dmitry_Slepchenkov
@@ -64,12 +55,6 @@ public final class DownloadImageCallable implements Callable<Boolean> {
          */
         private DownloadService downloadService =
                 new DownloadServiceImpl();
-
-        /**
-         * Read service for image read.
-         */
-        private ReadService readService =
-                new ReadServiceImpl();
 
         /**
          * Builder constructor with params.
@@ -118,7 +103,6 @@ public final class DownloadImageCallable implements Callable<Boolean> {
         this.imageObject = builder.imageObject;
         this.callback = builder.callback;
         this.downloadService = builder.downloadService;
-        this.readService = builder.readService;
     }
 
     /**
@@ -130,36 +114,18 @@ public final class DownloadImageCallable implements Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
 
-        String copyPath = Utils.getCopyPath();
-        Utils.createDir(copyPath);
         String url = imageObject.getResource().getUrl();
 
-        String fileName = Utils.getFileName(url);
-        String targetFolderLink = copyPath + File.separator
-                + imageObject.getId();
-        Utils.createDir(targetFolderLink);
-
-        Path targetPath = new File(targetFolderLink + File.separator + fileName)
-                .toPath();
+        Path targetPath = Utils.getImagePath(imageObject.getId(),
+                imageObject.getResource().getUrl());
         Boolean copyResult = downloadService.download(url, targetPath);
-        BufferedImage image = null;
 
         if (copyResult != null && callback != null) {
-            image = readService.read(targetPath);
+            callback.callFinished(imageObject);
         }
 
-        if (image != null) {
-            //logger.info("image != null, callback != null");
-            //Create new object with BufferedImage
-            ImageObject modifiedImageObject =
-                    new ImageObject.Builder(imageObject.getResource())
-                    .jobId(imageObject.getId())
-                    .image(image)
-                    .build();
-            callback.callFinished(modifiedImageObject);
-        }
 
-        return image != null;
+        return copyResult;
     }
 
 }

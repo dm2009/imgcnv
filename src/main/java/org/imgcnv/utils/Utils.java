@@ -102,7 +102,26 @@ public final class Utils {
      * @return String path to directory on web application with images
      */
     public static String getCopyPath() {
-        return getPath() + File.separator + "pic";
+        String path = getPath() + File.separator + "pic";
+        Utils.createDir(path);
+        return path;
+    }
+
+   /**
+     * Return path to image on web application with download image.
+     * @param id jobId
+     * @param url url to image in Internet
+     * @return Path path to directory on web application with images
+     */
+    public static Path getImagePath(final long id, final String url) {
+        String copyPath = Utils.getCopyPath();
+        String fileName = Utils.getFileName(url);
+        String targetFolderLink = copyPath + File.separator
+                + id;
+        Utils.createDir(targetFolderLink);
+        Path targetPath = new File(targetFolderLink + File.separator + fileName)
+                .toPath();
+        return targetPath;
     }
 
     /**
