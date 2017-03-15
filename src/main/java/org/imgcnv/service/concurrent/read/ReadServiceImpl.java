@@ -26,10 +26,13 @@ public class ReadServiceImpl implements ReadService {
 
         File file = new File(destination.toString());
         if (file.exists()) {
-            try {
-                image = ImageIO.read(file);
-            } catch (IOException e) {
-                throw new ApplicationException(e);
+            synchronized (file) {
+                try {
+                    image = ImageIO.read(file);
+                } catch (IOException e) {
+                    throw new ApplicationException(e);
+                }
+
             }
         }
 

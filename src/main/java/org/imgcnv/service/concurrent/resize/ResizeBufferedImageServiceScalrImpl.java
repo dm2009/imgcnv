@@ -40,6 +40,11 @@ public class ResizeBufferedImageServiceScalrImpl implements
                 destination, Integer.toString(scaledWidth) + "imgsr");
 
         long result = -1;
+
+        if (bufferedImage == null) {
+            return result;
+        }
+
         //logger.info("ResizedCopy started: {}", fullFileName);
         long timeout = Instant.now().getNano();
 

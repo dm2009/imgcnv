@@ -1,6 +1,7 @@
 package org.imgcnv.service.concurrent;
 
 import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -239,11 +240,11 @@ public class ImageProducer implements Producer<ImageResource>, ImageCallback {
     @Override
     public final void callFinished(final ImageObject imageObject) {
 
-        //Replace Image
-        BufferedImage image = readService.read(
-                Utils.getImagePath(imageObject.getId(),
-                        imageObject.getResource().getUrl()));
-        //Create new object with BufferedImage, maybe check null?
+        //Replace Image, disadvantage is one thread only.
+        Path path = Utils.getImagePath(imageObject.getId(),
+                imageObject.getResource().getUrl());
+        BufferedImage image = readService.read(path);
+        //Create new object with BufferedImage
         ImageObject modifiedImageObject =
                 new ImageObject.Builder(imageObject.getResource())
                 .jobId(imageObject.getId())

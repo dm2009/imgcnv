@@ -160,31 +160,32 @@ public class ImageConsumer implements Runnable {
             throw new ApplicationException(e);
         }
 
-        if (imageObject != null) {
+        if (imageObject == null) {
+            return;
+        }
 
-            Long id = imageObject.getId();
-            String url = imageObject.getResource().getUrl();
-            List<JobFutureObject> tasks = jobMap.getMap().get(id);
+        Long id = imageObject.getId();
+        String url = imageObject.getResource().getUrl();
+        List<JobFutureObject> tasks = jobMap.getMap().get(id);
 
-            for (JobFutureObject fo : tasks) {
-                if (fo.getResource().getUrl().equals(url)) {
-                    List<Future<Boolean>> futureImages =
-                            fo.getFutureImages();
-                    List<Integer> thumbails = Arrays.asList(
-                            Consts.SIZE_THUMB_1,
-                            Consts.SIZE_THUMB_2,
-                            Consts.SIZE_THUMB_3);
+        for (JobFutureObject fo : tasks) {
+            if (fo.getResource().getUrl().equals(url)) {
+                List<Future<Boolean>> futureImages =
+                        fo.getFutureImages();
+                List<Integer> thumbails = Arrays.asList(
+                        Consts.SIZE_THUMB_1,
+                        Consts.SIZE_THUMB_2,
+                        Consts.SIZE_THUMB_3);
 
-                    for (Integer thumbail : thumbails) {
+                for (Integer thumbail : thumbails) {
 
-                        ConvertImageCallable callable =
-                                new ConvertImageCallable.Builder(image, url)
-                                .resolution(thumbail)
-                                .jobId(id)
-                                .resizeService(resizeService)
-                                .build();
-                        futureImages.add(executorService.submit(callable));
-                    }
+                    ConvertImageCallable callable =
+                            new ConvertImageCallable.Builder(image, url)
+                            .resolution(thumbail)
+                            .jobId(id)
+                            .resizeService(resizeService)
+                            .build();
+                    futureImages.add(executorService.submit(callable));
                 }
             }
         }

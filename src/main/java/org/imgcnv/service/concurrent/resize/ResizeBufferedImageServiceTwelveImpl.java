@@ -41,6 +41,11 @@ public class ResizeBufferedImageServiceTwelveImpl implements
                 destination,
                 Integer.toString(scaledWidth) + "tm");
         long result = -1;
+
+        if (bufferedImage == null) {
+            return result;
+        }
+
         long timeout = Instant.now().getNano();
 
         int realWidth = bufferedImage.getWidth();
@@ -52,7 +57,7 @@ public class ResizeBufferedImageServiceTwelveImpl implements
 
         if (realWidth <= 0 || realHeight <= 0 || scaledWidth <= 0
                 || scaledHeight <= 0) {
-            return -1;
+            return result;
         }
 
         if (scaledWidth <= maxSize) {

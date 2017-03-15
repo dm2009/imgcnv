@@ -57,7 +57,7 @@ public final class Consts {
     /**
      * Period for Clean up job map (in seconds).
      */
-    public static final long CLEAN_PERIOD = 60 * 60;
+    public static final long CLEAN_PERIOD = 1 * 60;
 
     /**
      * Millis in second.
