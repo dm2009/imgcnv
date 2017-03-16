@@ -28,14 +28,6 @@ public class QueueWrapper {
         return blockingQueue;
     }
 
-    /**
-     *
-     * @param queue
-     *            the Queue<ImageObject> to set.
-     */
-    public final void setBlockingQueue(final BlockingQueue<ImageObject>
-    queue) {
-        this.blockingQueue = queue;
-    }
+
 
 }
