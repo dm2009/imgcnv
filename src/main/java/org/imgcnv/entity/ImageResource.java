@@ -31,15 +31,6 @@ public class ImageResource implements Serializable {
     }
 
     /**
-     *
-     * @param urlParam
-     *            String to set.
-     */
-    public final void setUrl(final String urlParam) {
-        this.url = urlParam;
-    }
-
-    /**
      * Constructor from superclass.
      */
     public ImageResource() {

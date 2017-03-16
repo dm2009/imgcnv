@@ -25,14 +25,6 @@ public class ImageConsumerStarter {
     }
 
     /**
-     * @param imageConsumerParam
-     *            ImageConsumer to set
-     */
-    public final void setImageConsumer(final ImageConsumer imageConsumerParam) {
-        this.imageConsumer = imageConsumerParam;
-    }
-
-    /**
      * Logger for this class.
      */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
