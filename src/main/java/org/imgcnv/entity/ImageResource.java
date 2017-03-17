@@ -1,9 +1,7 @@
 package org.imgcnv.entity;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.imgcnv.utils.Consts;
@@ -44,23 +42,6 @@ public class ImageResource implements Serializable {
      */
     public ImageResource(final String urlParam) {
         this.url = urlParam;
-    }
-
-    /**
-     * Convert string with urls to List<ImageResource>.
-     *
-     * @param params
-     *            String with list of url with delimiters
-     * @return List<ImageResource>
-     */
-    public static List<ImageResource> imageResourceListFromString(
-            final String params) {
-        List<ImageResource> list = new ArrayList<ImageResource>();
-        String[] str = params.split(Consts.DELIMITER);
-        for (String url : str) {
-            list.add(new ImageResource(url));
-        }
-        return list;
     }
 
     /**
