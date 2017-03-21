@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Path;
+import java.time.Duration;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -262,11 +263,22 @@ public final class Utils {
         j.setData(image.getData());
         return j;
         }
+
+    /**
+     * Convert Duration to string.
+     * @param duration Duration to convert
+     * @return String
+     */
+    public static String durationToString(final Duration duration) {
+        long hours = duration.toHours();
+        long minutes = duration.minusHours(hours).toMinutes();
+        return String.format("%02d:%02d", hours, minutes);
+    }
+
     /**
      * Constructor for this class.
      *
      */
-
     private Utils() {
     }
 

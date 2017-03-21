@@ -1,12 +1,11 @@
 package org.imgcnv.service.concurrent;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 
 import org.imgcnv.utils.Consts;
 import org.slf4j.Logger;
@@ -84,28 +83,42 @@ public class JobMapWrapper {
             return;
         }
 
-        LocalDateTime now = LocalDateTime.now();
-
+        //traditional
+        /*
         Iterator<Long> it = getMap().keySet().iterator();
         while (it.hasNext()) {
             Long index = it.next();
             List<JobFutureObject> object = getMap().get(index);
             long seconds = 0;
             if (object.get(0) != null) {
-                seconds = (now.toInstant(ZoneOffset.UTC)
-                        .toEpochMilli() - object.get(0).getDateTime()
-                        .toInstant(ZoneOffset.UTC)
-                        .toEpochMilli()) / Consts.MILLIS_IN_SEC;
-                logger.info("CleanUp Progress seconds: {}", seconds);
+                seconds = object.get(0).getDuration();
+                //logger.info("CleanUp Progress seconds: {}", seconds);
             }
             if (seconds > Consts.CLEAN_PERIOD && isReadyJob(index)) {
                 it.remove();
             }
         }
+        */
+        //java8
+        Predicate<Entry<Long, List<JobFutureObject>>> nonNullEntry =
+                entry -> entry.getValue().get(0) != null;
+
+        Predicate<Entry<Long, List<JobFutureObject>>> durationEntry =
+                        entry -> entry.getValue().get(0).getDuration()
+                        > Consts.CLEAN_PERIOD;
+
+        Predicate<Entry<Long, List<JobFutureObject>>> isReadyEntry =
+                        entry -> isReadyJob(entry.getKey());
+                        
+        Predicate<Entry<Long, List<JobFutureObject>>> fullPredicate =
+                 nonNullEntry
+                .and(durationEntry)
+                .and(isReadyEntry);
+
+        getMap().entrySet().removeIf(fullPredicate);
+
         long sizeAfter = getMap().size();
         logger.info("CleanUp Result before: {}, after: {} ", sizeBefore,
                 sizeAfter);
     }
-
-
 }

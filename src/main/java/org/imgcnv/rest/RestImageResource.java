@@ -3,11 +3,14 @@ package org.imgcnv.rest;
 import org.imgcnv.entity.ImageResource;
 import org.imgcnv.service.concurrent.JobMapWrapper;
 import org.imgcnv.service.concurrent.Producer;
+import org.imgcnv.utils.Consts;
+import org.imgcnv.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +32,11 @@ import javax.ws.rs.core.Response;
 public class RestImageResource {
 
     /**
+     * Duration for status in message as String.
+     */
+    private static final String DURATION_MSG = Utils.durationToString(
+            Duration.ofSeconds(Consts.CLEAN_PERIOD));
+    /**
      * Producer for class.
      */
     @Autowired
@@ -40,7 +48,8 @@ public class RestImageResource {
     @Autowired
     private JobMapWrapper jobMap;
 
-     /**
+
+    /**
      * Create endpoint with path /jobs. Process url for download images and
      * transform its.
      *
@@ -60,10 +69,16 @@ public class RestImageResource {
 
         Long jobId = producer.addToProducer(ob);
 
-        StringBuilder output = new StringBuilder("Your job number is: ")
+        final int capacity = 180;
+        StringBuilder output = new StringBuilder(capacity)
+                .append("Your job number is: ")
                 .append(jobId.toString())
-                .append(" Server receive list: ")
-                .append(ob.toString());
+                .append(" \nServer receive list: \n")
+                .append(ob.toString())
+                .append(" \nYou can see status during (")
+                .append("HH:mm")
+                .append("):")
+                .append(DURATION_MSG);
 
         return Response.status(Response.Status.OK)
                 .entity(output.toString()).build();

@@ -1,11 +1,13 @@
 package org.imgcnv.service.concurrent;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import java.util.concurrent.Future;
 
 import org.imgcnv.entity.ImageResource;
+import org.imgcnv.utils.Consts;
 
 /**
  * Class for hold Futures objects.
@@ -65,6 +67,18 @@ public final class JobFutureObject {
     */
     public LocalDateTime getDateTime() {
         return dateTime;
+    }
+
+    /**
+     * Used for cleanup.
+     * @return seconds long in duration.
+     */
+    public long getDuration() {
+        LocalDateTime now = LocalDateTime.now();
+        long seconds = (now.toInstant(ZoneOffset.UTC).toEpochMilli()
+                - dateTime.toInstant(ZoneOffset.UTC)
+                .toEpochMilli()) / Consts.MILLIS_IN_SEC;
+        return seconds;
     }
 
     /**

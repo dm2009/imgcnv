@@ -1,8 +1,9 @@
 package org.imgcnv.entity;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.imgcnv.utils.Consts;
 
@@ -53,14 +54,22 @@ public class ImageResource implements Serializable {
      */
     public static Set<ImageResource> imageResourceSetFromString(
             final String params) {
+
+        Set<ImageResource> set = (Stream.of(params.split(Consts.DELIMITER))
+                .map(ImageResource::new)
+                .collect(Collectors.toSet()));
+        return set;
+    }
+    /*
+   public static Set<ImageResource> imageResourceSetFromString(
+            final String params) {
         Set<ImageResource> set = new HashSet<ImageResource>();
         String[] str = params.split(Consts.DELIMITER);
         for (String url : str) {
             set.add(new ImageResource(url));
         }
         return set;
-    }
-
+    }*/
     /**
      * {@inheritDoc}
      */
