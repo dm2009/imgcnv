@@ -2,10 +2,8 @@ package org.imgcnv.service.concurrent;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
-import java.util.function.Predicate;
 
 import org.imgcnv.utils.Consts;
 import org.slf4j.Logger;
@@ -99,23 +97,11 @@ public class JobMapWrapper {
             }
         }
         */
+
         //java8
-        Predicate<Entry<Long, List<JobFutureObject>>> nonNullEntry =
-                entry -> entry.getValue().get(0) != null;
-
-        Predicate<Entry<Long, List<JobFutureObject>>> durationEntry =
-                        entry -> entry.getValue().get(0).getDuration()
-                        > Consts.CLEAN_PERIOD;
-
-        Predicate<Entry<Long, List<JobFutureObject>>> isReadyEntry =
-                        entry -> isReadyJob(entry.getKey());
-                        
-        Predicate<Entry<Long, List<JobFutureObject>>> fullPredicate =
-                 nonNullEntry
-                .and(durationEntry)
-                .and(isReadyEntry);
-
-        getMap().entrySet().removeIf(fullPredicate);
+        getMap().entrySet().removeIf(entry -> entry.getValue().get(0) != null
+                && entry.getValue().get(0).getDuration() > Consts.CLEAN_PERIOD
+                && isReadyJob(entry.getKey()));
 
         long sizeAfter = getMap().size();
         logger.info("CleanUp Result before: {}, after: {} ", sizeBefore,
