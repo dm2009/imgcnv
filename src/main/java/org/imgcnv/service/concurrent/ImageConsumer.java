@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.imgcnv.exception.ApplicationException;
 import org.imgcnv.service.concurrent.resize.ResizeBufferedImageService;
@@ -26,6 +25,14 @@ public class ImageConsumer implements Runnable {
      * Logger for this class.
      */
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    /**
+     * List with thumbails params.
+     */
+    private final List<Integer> thumbails = Arrays.asList(
+            Consts.SIZE_THUMB_1,
+            Consts.SIZE_THUMB_2,
+            Consts.SIZE_THUMB_3);
 
     /**
      * JobMapWrapper jobMap for storage job information.
@@ -151,7 +158,7 @@ public class ImageConsumer implements Runnable {
         try {
             imageObject = itemQueue.getBlockingQueue().take();
             if (imageObject != null) {
-                image = imageObject.getImage(); //need to put image here ...
+                image = imageObject.getImage();
 
                 logger.info("Take image for id {} url {}", imageObject.getId(),
                         imageObject.getResource().getUrl());
@@ -164,18 +171,16 @@ public class ImageConsumer implements Runnable {
             return;
         }
 
+        BufferedImage imageConst = image;
         Long id = imageObject.getId();
         String url = imageObject.getResource().getUrl();
         List<JobFutureObject> tasks = jobMap.getMap().get(id);
 
+        /*
         for (JobFutureObject fo : tasks) {
             if (fo.getResource().getUrl().equals(url)) {
                 List<Future<Boolean>> futureImages =
                         fo.getFutureImages();
-                List<Integer> thumbails = Arrays.asList(
-                        Consts.SIZE_THUMB_1,
-                        Consts.SIZE_THUMB_2,
-                        Consts.SIZE_THUMB_3);
 
                 for (Integer thumbail : thumbails) {
 
@@ -188,7 +193,23 @@ public class ImageConsumer implements Runnable {
                     futureImages.add(executorService.submit(callable));
                 }
             }
-        }
+        }*/
+
+
+        //j8
+        tasks.stream().filter(fo -> fo.getResource().getUrl().equals(url))
+        .forEach(fo -> {
+            thumbails.stream().forEach(thumbail -> {
+                ConvertImageCallable callable =
+                        new ConvertImageCallable.Builder(imageConst, url)
+                        .resolution(thumbail)
+                        .jobId(id)
+                        .resizeService(resizeService)
+                        .build();
+                fo.getFutureImages().add(executorService.submit(callable));
+            });
+        });
+
     }
 
     @Override
