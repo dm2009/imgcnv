@@ -74,7 +74,7 @@ public class RestImageResource {
                 .append("Your job number is: ")
                 .append(jobId.toString())
                 .append(" \nServer receive list: \n")
-                .append(ob.toString())
+                .append(ImageResource.asString(ob))
                 .append(" \nYou can see status during (")
                 .append("HH:mm")
                 .append("):")

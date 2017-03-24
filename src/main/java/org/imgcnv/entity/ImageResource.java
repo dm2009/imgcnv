@@ -1,6 +1,7 @@
 package org.imgcnv.entity;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,9 +56,9 @@ public class ImageResource implements Serializable {
     public static Set<ImageResource> imageResourceSetFromString(
             final String params) {
 
-        Set<ImageResource> set = (Stream.of(params.split(Consts.DELIMITER))
+        Set<ImageResource> set = Stream.of(params.split(Consts.DELIMITER))
                 .map(ImageResource::new)
-                .collect(Collectors.toSet()));
+                .collect(Collectors.toSet());
         return set;
     }
     /*
@@ -120,4 +121,15 @@ public class ImageResource implements Serializable {
         return true;
     }
 
+    /**
+     * Convert Collection to String.
+     * @param collection Collection of elements
+     * @return String representation of List
+     */
+    public static final String asString(final Collection<ImageResource>
+    collection) {
+        return collection.stream()
+                .map(ImageResource::getUrl)
+                .collect(Collectors.joining(",\n", "[", "]"));
+    }
 }
