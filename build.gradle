@@ -66,6 +66,15 @@ dependencies {
     compile "org.springframework:spring-context:$springVersion"
     compile "org.springframework:spring-web:$springVersion"
     compile "org.springframework:spring-beans:$springVersion"
+
+    compile "org.springframework:spring-aop:$springVersion"
+
+
+    //compile "aspectj:aspectj-tools:1.0.6"
+     compile "org.aspectj:aspectjrt:1.8.10"
+     compile "org.aspectj:aspectjweaver:1.8.10"
+     
+     
     
     //compile "commons-io:commons-io:2.5"
     
@@ -81,7 +90,7 @@ cargo {
 
     local {
         installer {
-            installUrl = "http://ftp.byfly.by/pub/apache.org/tomcat/tomcat-8/v8.0.41/bin/apache-tomcat-8.0.41-windows-x64.zip"
+            installUrl = "http://ftp.byfly.by/pub/apache.org/tomcat/tomcat-8/v8.0.42/bin/apache-tomcat-8.0.42-windows-x64.zip"
             downloadDir = file("$buildDir/download")
             extractDir = file("$buildDir/extract")
         }

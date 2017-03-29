@@ -9,8 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import org.imgcnv.exception.ApplicationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.apache.commons.validator.routines.UrlValidator;
 
@@ -20,10 +18,6 @@ import org.apache.commons.validator.routines.UrlValidator;
 *
 */
 public class DownloadServiceImpl implements DownloadService {
-    /**
-     * Logger for this class.
-     */
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * {@inheritDoc}
@@ -50,8 +44,6 @@ public class DownloadServiceImpl implements DownloadService {
                         StandardCopyOption.REPLACE_EXISTING);
 
                 result = true;
-
-                logger.info("download: {} -> {}", url, destination);
 
             } catch (IOException e) {
                 throw new ApplicationException(e);

@@ -3,12 +3,8 @@ package org.imgcnv.service.concurrent.resize;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.nio.file.Path;
-import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 import org.imgcnv.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.twelvemonkeys.image.ResampleOp;
 
@@ -21,10 +17,6 @@ import com.twelvemonkeys.image.ResampleOp;
  */
 public class ResizeBufferedImageServiceTwelveImpl implements
         ResizeBufferedImageService {
-    /**
-     * Logger for this class.
-     */
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * {@inheritDoc}
@@ -46,7 +38,6 @@ public class ResizeBufferedImageServiceTwelveImpl implements
             return result;
         }
 
-        long timeout = Instant.now().getNano();
 
         int realWidth = bufferedImage.getWidth();
         int realHeight = bufferedImage.getHeight();
@@ -80,9 +71,6 @@ public class ResizeBufferedImageServiceTwelveImpl implements
         scaled = Utils.sharper(scaled, Utils.OP_SHARP_MIDDLE);
 
         result = Utils.saveBufferedImage(scaled, fullFileName);
-        timeout = Instant.now().getNano() - timeout;
-        logger.info("ResizedCopy:{} end timeout {} ms", fullFileName,
-                TimeUnit.MILLISECONDS.convert(timeout, TimeUnit.NANOSECONDS));
 
         return result;
     }

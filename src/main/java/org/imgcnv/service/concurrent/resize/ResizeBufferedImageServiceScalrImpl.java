@@ -2,14 +2,10 @@ package org.imgcnv.service.concurrent.resize;
 
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
-import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 import org.imgcnv.utils.Utils;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -22,11 +18,6 @@ public class ResizeBufferedImageServiceScalrImpl implements
      ResizeBufferedImageService {
 
     /**
-     * Logger for this class.
-     */
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -36,17 +27,15 @@ public class ResizeBufferedImageServiceScalrImpl implements
             final String url,
             final Path destination) {
 
+
         String fullFileName = Utils.getImageName(Utils.getFileName(url),
                 destination, Integer.toString(scaledWidth) + "imgsr");
 
         long result = -1;
-
         if (bufferedImage == null) {
             return result;
         }
 
-        //logger.info("ResizedCopy started: {}", fullFileName);
-        long timeout = Instant.now().getNano();
 
         BufferedImage modifiedImage = null;
         synchronized (bufferedImage) {
@@ -55,9 +44,7 @@ public class ResizeBufferedImageServiceScalrImpl implements
                 Utils.OP_SHARP_MIDDLE);
         }
         result = Utils.saveBufferedImage(modifiedImage, fullFileName);
-        timeout = Instant.now().getNano() - timeout;
-        logger.info("ResizedCopy: {} end timeout {} ms", fullFileName,
-                TimeUnit.MILLISECONDS.convert(timeout, TimeUnit.NANOSECONDS));
+
         return result;
     }
 

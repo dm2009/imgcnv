@@ -2,13 +2,9 @@ package org.imgcnv.service.concurrent.resize;
 
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
-import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 import org.imgcnv.exception.ApplicationException;
 import org.imgcnv.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.resizers.configurations.Antialiasing;
@@ -22,10 +18,6 @@ import net.coobird.thumbnailator.resizers.configurations.Antialiasing;
  */
 public class ResizeBufferedImageServiceThumbnailatorImpl implements
 ResizeBufferedImageService {
-    /**
-     * Logger for this class.
-     */
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * {@inheritDoc}
@@ -48,8 +40,6 @@ ResizeBufferedImageService {
         }
 
         try {
-            //logger.info("ResizedCopy started: {}", fullFileName);
-            long timeout = Instant.now().getNano();
             if (!"GIF".equals(newFileExt.toUpperCase())) {
                 BufferedImage bi = null;
                 synchronized (bufferedImage) {
@@ -77,10 +67,6 @@ ResizeBufferedImageService {
                 }
             }
             result = 1;
-            timeout = Instant.now().getNano() - timeout;
-            logger.info("ResizedCopy: {} end timeout {} ms",
-                 fullFileName,
-                 TimeUnit.MILLISECONDS.convert(timeout, TimeUnit.NANOSECONDS));
         } catch (Exception e) {
             result = -1;
             throw new ApplicationException(e);

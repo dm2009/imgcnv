@@ -19,6 +19,7 @@ import org.imgcnv.utils.Consts;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 /**
  * Class for configured Spring Bean for application.
@@ -27,8 +28,17 @@ import org.springframework.context.annotation.Configuration;
  *
  */
 @Configuration
+@EnableAspectJAutoProxy
 @ComponentScan
 public class Beans {
+    /**
+     *
+     * @return LoggingAspect.
+     */
+    @Bean
+    public LoggingAspect loggingAspect() {
+        return new LoggingAspect();
+    }
 
     /**
      *
@@ -56,7 +66,7 @@ public class Beans {
     public ResizeBufferedImageService resizeService() {
         return new ResizeBufferedImageServiceScalrImpl();
                 //ResizeBufferedImageServiceTwelveImpl();
-                //ResizeBufferedImageServiceThumbnailatorImpl
+                //ResizeBufferedImageServiceThumbnailatorImpl();
     }
 
     /**
