@@ -199,6 +199,7 @@ public class ImageProducer implements Producer<ImageResource>, ImageCallback {
         List<JobFutureObject> tasks =
                 new CopyOnWriteArrayList<JobFutureObject>();
 
+        /*
         for (ImageResource item : resource) {
             // image object
             ImageObject imageObject = new ImageObject.Builder(item)
@@ -214,6 +215,8 @@ public class ImageProducer implements Producer<ImageResource>, ImageCallback {
             List<Future<Boolean>> futureImages =
                     new CopyOnWriteArrayList<Future<Boolean>>();
 
+            //ZonedDateTime.now().toLocalDateTime();
+
             JobFutureObject futureObject = new JobFutureObject
                     .Builder(item)
                     .dateTime(LocalDateTime.now())
@@ -224,7 +227,38 @@ public class ImageProducer implements Producer<ImageResource>, ImageCallback {
 
             logger.info("Put item with id={}, date={} to futureObject.", id,
                     futureObject.getDateTime());
-        }
+        }*/
+
+        //j8
+        resource.stream().forEach(item -> {
+         // image object
+            ImageObject imageObject = new ImageObject.Builder(item)
+                    .jobId(id)
+                    .build();
+
+            DownloadImageCallable callable =
+                    new DownloadImageCallable.Builder(imageObject, this)
+                    .downloadService(downloadService)
+                    .build();
+
+            // assamble futureObject for jobMap
+            List<Future<Boolean>> futureImages =
+                    new CopyOnWriteArrayList<Future<Boolean>>();
+
+            //ZonedDateTime.now().toLocalDateTime();
+
+            JobFutureObject futureObject = new JobFutureObject
+                    .Builder(item)
+                    .dateTime(LocalDateTime.now())
+                    .futureImages(futureImages)
+                    .future(executorService.submit(callable))
+                    .build();
+            tasks.add(futureObject);
+
+            logger.info("Put item with id={}, date={} to futureObject.", id,
+                    futureObject.getDateTime());
+        });
+        //
         jobMap.getMap().put(id, tasks);
         logger.info("Put tasks id={} to map", id);
 
